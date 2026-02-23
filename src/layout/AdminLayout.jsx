@@ -1,0 +1,2087 @@
+
+
+// // // // // 📁 layout/AdminLayout.jsx
+// // // // import { Outlet, useNavigate, useLocation } from "react-router-dom";
+// // // // import {
+// // // //   LayoutDashboard,
+// // // //   BookOpen,
+// // // //   Settings as SettingsIcon,
+// // // //   FileText,
+// // // //   Users,
+// // // //   LogOut,
+// // // //   User,
+// // // //   Home,
+// // // // } from "lucide-react";
+// // // // import SidebarItem from "../components/SidebarItem";
+// // // // import logo from "../assets/logo-india.png";
+
+// // // // export default function AdminLayout() {
+// // // //   const navigate = useNavigate();
+// // // //   const location = useLocation();
+
+// // // //   return (
+// // // //     <div className="min-h-screen flex bg-slate-100">
+// // // //       <aside className="w-64 bg-white shadow-lg flex flex-col">
+// // // //         <div className="h-20 flex items-center gap-3 px-4 bg-orange-600">
+// // // //           <img src={logo} className="h-14 w-14 object-contain" />
+// // // //           <div className="text-white">
+// // // //             <p className="font-bold text-sm">Constitution Club</p>
+// // // //             <p className="text-xs opacity-90">of India</p>
+// // // //           </div>
+// // // //         </div>
+
+// // // //         <nav className="p-4 space-y-1 flex-1">
+// // // //           <SidebarItem
+// // // //             icon={LayoutDashboard}
+// // // //             title="Dashboard"
+// // // //             active={location.pathname === "/dashboard"}
+// // // //             onClick={() => navigate("/dashboard")}
+// // // //           />
+
+// // // //           <SidebarItem
+// // // //             icon={BookOpen}
+// // // //             title="Bookings"
+// // // //             active={location.pathname === "/bookings"}
+// // // //             onClick={() => navigate("/bookings")}
+// // // //           />
+
+// // // //           <SidebarItem
+// // // //             icon={Home}
+// // // //             title="Masters"
+// // // //             active={location.pathname === "/masters"}
+// // // //             onClick={() => navigate("/masters")}
+// // // //           />
+
+// // // //           <SidebarItem
+// // // //             icon={Users}
+// // // //             title="Staff"
+// // // //             active={location.pathname === "/staff"}
+// // // //             onClick={() => navigate("/staff")}
+// // // //           />
+
+// // // //           <SidebarItem
+// // // //             icon={SettingsIcon}
+// // // //             title="Settings"
+// // // //             active={location.pathname === "/settings"}
+// // // //             onClick={() => navigate("/settings")}
+// // // //           />
+
+// // // //           <SidebarItem
+// // // //             icon={FileText}
+// // // //             title="Reports"
+// // // //             active={location.pathname === "/reports"}
+// // // //             onClick={() => navigate("/reports")}
+// // // //           />
+// // // //         </nav>
+// // // //       </aside>
+
+// // // //       <div className="flex-1 flex flex-col">
+// // // //         <header className="h-16 bg-white shadow flex items-center justify-between px-6">
+// // // //           <h1 className="text-lg font-semibold text-green-700">Admin Panel</h1>
+
+// // // //           <button
+// // // //             onClick={() => navigate("/login")}
+// // // //             className="flex items-center gap-2 text-sm font-semibold text-red-600"
+// // // //           >
+// // // //             <LogOut size={18} />
+// // // //             Logout
+// // // //           </button>
+// // // //         </header>
+
+// // // //         <main className="p-6">
+// // // //           <Outlet />
+// // // //         </main>
+// // // //       </div>
+// // // //     </div>
+// // // //   );
+// // // // }
+
+// // // // 📁 layout/AdminLayout.jsx
+// // // import { Outlet, useNavigate, useLocation } from "react-router-dom";
+// // // import {
+// // //   LayoutDashboard,
+// // //   BookOpen,
+// // //   Settings as SettingsIcon,
+// // //   FileText,
+// // //   Users,
+// // //   LogOut,
+// // //   User,
+// // //   Home,
+// // //   ChevronRight,
+// // //   Bell,
+// // //   Search,
+// // //   Menu,
+// // //   X,
+// // //   Sun,
+// // //   Moon,
+// // //   Building2
+// // // } from "lucide-react";
+// // // import { useState, useEffect } from "react";
+// // // import SidebarItem from "../components/SidebarItem";
+// // // import logo from "../assets/logo-india.png";
+
+// // // export default function AdminLayout() {
+// // //   const navigate = useNavigate();
+// // //   const location = useLocation();
+// // //   const [sidebarOpen, setSidebarOpen] = useState(true);
+// // //   const [darkMode, setDarkMode] = useState(false);
+// // //   const [notifications, setNotifications] = useState(3);
+// // //   const [userName, setUserName] = useState("Admin User");
+// // //   const [userRole, setUserRole] = useState("Administrator");
+
+// // //   // Toggle dark mode
+// // //   useEffect(() => {
+// // //     if (darkMode) {
+// // //       document.documentElement.classList.add('dark');
+// // //     } else {
+// // //       document.documentElement.classList.remove('dark');
+// // //     }
+// // //   }, [darkMode]);
+
+// // //   // Menu items with icons and colors
+// // //   const menuItems = [
+// // //     {
+// // //       icon: LayoutDashboard,
+// // //       title: "Dashboard",
+// // //       path: "/dashboard",
+// // //       color: "from-blue-500 to-cyan-500",
+// // //       activeColor: "bg-gradient-to-r from-blue-500 to-cyan-500"
+// // //     },
+// // //     {
+// // //       icon: BookOpen,
+// // //       title: "Bookings",
+// // //       path: "/bookings",
+// // //       color: "from-emerald-500 to-teal-500",
+// // //       activeColor: "bg-gradient-to-r from-emerald-500 to-teal-500"
+// // //     },
+// // //     {
+// // //       icon: Home,
+// // //       title: "Masters",
+// // //       path: "/masters",
+// // //       color: "from-orange-500 to-amber-500",
+// // //       activeColor: "bg-gradient-to-r from-orange-500 to-amber-500"
+// // //     },
+// // //     {
+// // //       icon: Users,
+// // //       title: "Staff",
+// // //       path: "/staff",
+// // //       color: "from-purple-500 to-violet-500",
+// // //       activeColor: "bg-gradient-to-r from-purple-500 to-violet-500"
+// // //     },
+// // //     {
+// // //       icon: SettingsIcon,
+// // //       title: "Settings",
+// // //       path: "/settings",
+// // //       color: "from-gray-600 to-gray-700",
+// // //       activeColor: "bg-gradient-to-r from-gray-600 to-gray-700"
+// // //     },
+// // //     {
+// // //       icon: FileText,
+// // //       title: "Reports",
+// // //       path: "/reports",
+// // //       color: "from-rose-500 to-pink-500",
+// // //       activeColor: "bg-gradient-to-r from-rose-500 to-pink-500"
+// // //     },
+// // //   ];
+
+// // //   const handleLogout = () => {
+// // //     localStorage.removeItem('authToken');
+// // //     navigate('/login');
+// // //   };
+
+// // //   const getPageTitle = () => {
+// // //     const item = menuItems.find(item => item.path === location.pathname);
+// // //     return item ? item.title : "Dashboard";
+// // //   };
+
+// // //   return (
+// // //     <div className={`min-h-screen flex transition-all duration-300 ${
+// // //       darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-gray-50 to-gray-100'
+// // //     }`}>
+// // //       {/* Mobile Overlay */}
+// // //       {!sidebarOpen && (
+// // //         <div 
+// // //           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+// // //           onClick={() => setSidebarOpen(false)}
+// // //         />
+// // //       )}
+
+// // //       {/* Sidebar */}
+// // //       <aside className={`
+// // //         fixed lg:static inset-y-0 left-0 z-50
+// // //         w-64 lg:w-72
+// // //         transform transition-transform duration-300 ease-in-out
+// // //         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+// // //         flex flex-col
+// // //         bg-gradient-to-b from-gray-900 to-gray-800
+// // //         shadow-2xl
+// // //       `}>
+// // //         {/* Logo Section */}
+// // //         <div className="h-24 flex items-center gap-4 px-6 border-b border-gray-700/50">
+// // //           <div className="relative">
+// // //             <img 
+// // //               src={logo} 
+// // //               alt="Constitution Club of India" 
+// // //               className="h-16 w-16 object-contain filter brightness-0 invert"
+// // //             />
+// // //             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900"></div>
+// // //           </div>
+// // //           <div className="text-white">
+// // //             <p className="font-bold text-lg tracking-wide">Constitution Club</p>
+// // //             <p className="text-xs text-gray-300 tracking-tight">of India</p>
+// // //             <p className="text-xs text-green-400 mt-1">• Hotel Management</p>
+// // //           </div>
+// // //           <button
+// // //             onClick={() => setSidebarOpen(false)}
+// // //             className="lg:hidden absolute right-4 top-4 text-gray-400 hover:text-white"
+// // //           >
+// // //             <X className="w-5 h-5" />
+// // //           </button>
+// // //         </div>
+
+// // //         {/* User Profile */}
+// // //         <div className="p-6 border-b border-gray-700/50">
+// // //           <div className="flex items-center gap-3">
+// // //             <div className="relative">
+// // //               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+// // //                 <User className="w-6 h-6 text-white" />
+// // //               </div>
+// // //               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900"></div>
+// // //             </div>
+// // //             <div className="flex-1">
+// // //               <p className="text-white font-medium">{userName}</p>
+// // //               <p className="text-xs text-gray-400">{userRole}</p>
+// // //             </div>
+// // //             <button 
+// // //               onClick={() => setDarkMode(!darkMode)}
+// // //               className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700"
+// // //             >
+// // //               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+// // //             </button>
+// // //           </div>
+// // //         </div>
+
+// // //         {/* Navigation Menu */}
+// // //         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+// // //           <div className="px-2 py-3">
+// // //             <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">Navigation</p>
+// // //             {menuItems.map((item) => (
+// // //               <SidebarItem
+// // //                 key={item.path}
+// // //                 icon={item.icon}
+// // //                 title={item.title}
+// // //                 active={location.pathname === item.path}
+// // //                 gradient={item.color}
+// // //                 activeGradient={item.activeColor}
+// // //                 onClick={() => {
+// // //                   navigate(item.path);
+// // //                   window.innerWidth < 1024 && setSidebarOpen(false);
+// // //                 }}
+// // //               />
+// // //             ))}
+// // //           </div>
+
+// // //           {/* Quick Stats */}
+// // //           <div className="mt-8 px-4 py-4 bg-gray-800/50 rounded-xl mx-2">
+// // //             <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">Quick Stats</p>
+// // //             <div className="space-y-2">
+// // //               <div className="flex items-center justify-between">
+// // //                 <span className="text-sm text-gray-300">Active Bookings</span>
+// // //                 <span className="text-sm font-semibold text-green-400">12</span>
+// // //               </div>
+// // //               <div className="flex items-center justify-between">
+// // //                 <span className="text-sm text-gray-300">Rooms Occupied</span>
+// // //                 <span className="text-sm font-semibold text-blue-400">24/40</span>
+// // //               </div>
+// // //               <div className="flex items-center justify-between">
+// // //                 <span className="text-sm text-gray-300">Today's Revenue</span>
+// // //                 <span className="text-sm font-semibold text-amber-400">₹45,600</span>
+// // //               </div>
+// // //             </div>
+// // //           </div>
+// // //         </nav>
+
+// // //         {/* Logout Section */}
+// // //         <div className="p-4 border-t border-gray-700/50">
+// // //           <button
+// // //             onClick={handleLogout}
+// // //             className="w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition-all duration-200 group"
+// // //           >
+// // //             <div className="p-2 rounded-lg bg-red-500/10 group-hover:bg-red-500/20">
+// // //               <LogOut className="w-4 h-4 text-red-400" />
+// // //             </div>
+// // //             <span>Sign Out</span>
+// // //             <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+// // //           </button>
+          
+// // //           <div className="mt-4 pt-4 border-t border-gray-700/50 text-center">
+// // //             <p className="text-xs text-gray-500">v2.1.0 • Last updated: Today</p>
+// // //           </div>
+// // //         </div>
+// // //       </aside>
+
+// // //       {/* Main Content */}
+// // //       <div className="flex-1 flex flex-col">
+// // //         {/* Top Header */}
+// // //         <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
+// // //           <div className="h-16 px-6 flex items-center justify-between">
+// // //             {/* Left Section */}
+// // //             <div className="flex items-center gap-4">
+// // //               <button
+// // //                 onClick={() => setSidebarOpen(!sidebarOpen)}
+// // //                 className="lg:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+// // //               >
+// // //                 <Menu className="w-5 h-5" />
+// // //               </button>
+              
+// // //               {/* Page Title */}
+// // //               <div>
+// // //                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+// // //                   {getPageTitle()}
+// // //                 </h1>
+// // //                 <p className="text-sm text-gray-600 dark:text-gray-400">
+// // //                   Constitution Club of India Hotel Management System
+// // //                 </p>
+// // //               </div>
+// // //             </div>
+
+// // //             {/* Right Section */}
+// // //             <div className="flex items-center gap-4">
+// // //               {/* Search */}
+// // //               <div className="relative hidden md:block">
+// // //                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+// // //                 <input
+// // //                   type="text"
+// // //                   placeholder="Search..."
+// // //                   className="pl-10 pr-4 py-2 w-64 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+// // //                 />
+// // //               </div>
+
+// // //               {/* Notifications */}
+// // //               <button className="relative p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800">
+// // //                 <Bell className="w-5 h-5" />
+// // //                 {notifications > 0 && (
+// // //                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+// // //                     {notifications}
+// // //                   </span>
+// // //                 )}
+// // //               </button>
+
+// // //               {/* Theme Toggle */}
+// // //               <button 
+// // //                 onClick={() => setDarkMode(!darkMode)}
+// // //                 className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+// // //               >
+// // //                 {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+// // //               </button>
+
+// // //               {/* User Menu */}
+// // //               <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-800">
+// // //                 <div className="text-right hidden sm:block">
+// // //                   <p className="text-sm font-medium text-gray-900 dark:text-white">{userName}</p>
+// // //                   <p className="text-xs text-gray-500 dark:text-gray-400">{userRole}</p>
+// // //                 </div>
+// // //                 <div className="relative">
+// // //                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold">
+// // //                     {userName.charAt(0)}
+// // //                   </div>
+// // //                   <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"></div>
+// // //                 </div>
+// // //               </div>
+// // //             </div>
+// // //           </div>
+
+// // //           {/* Breadcrumb */}
+// // //           <div className="px-6 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+// // //             <div className="flex items-center gap-2 text-sm">
+// // //               <button 
+// // //                 onClick={() => navigate('/dashboard')}
+// // //                 className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+// // //               >
+// // //                 Home
+// // //               </button>
+// // //               <ChevronRight className="w-3 h-3 text-gray-400" />
+// // //               <span className="text-gray-900 dark:text-white font-medium">
+// // //                 {getPageTitle()}
+// // //               </span>
+// // //             </div>
+// // //           </div>
+// // //         </header>
+
+// // //         {/* Main Content Area */}
+// // //         <main className="flex-1 overflow-y-auto">
+// // //           <div className="p-6">
+// // //             <Outlet />
+// // //           </div>
+          
+// // //           {/* Footer */}
+// // //           <footer className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+// // //             <div className="px-6 py-4">
+// // //               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+// // //                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+// // //                   <Building2 className="w-4 h-4" />
+// // //                   <span>Constitution Club of India • Hotel Management System</span>
+// // //                 </div>
+// // //                 <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+// // //                   <span>v2.1.0</span>
+// // //                   <span>•</span>
+// // //                   <span>© {new Date().getFullYear()} All rights reserved</span>
+// // //                   <span>•</span>
+// // //                   <span>Last updated: {new Date().toLocaleDateString()}</span>
+// // //                 </div>
+// // //               </div>
+// // //             </div>
+// // //           </footer>
+// // //         </main>
+// // //       </div>
+// // //     </div>
+// // //   );
+// // // }
+
+// // // 📁 layout/AdminLayout.jsx
+// // import { Outlet, useNavigate, useLocation } from "react-router-dom";
+// // import {
+// //   LayoutDashboard,
+// //   BookOpen,
+// //   Settings as SettingsIcon,
+// //   FileText,
+// //   Users,
+// //   LogOut,
+// //   User,
+// //   Home,
+// //   ChevronRight,
+// //   Bell,
+// //   Search,
+// //   Menu,
+// //   X,
+// //   Building2,
+// //   Calendar,
+// //   DollarSign,
+// //   Shield,
+// //   Hotel,
+// //   Clock,
+// //   Activity,
+// //   TrendingUp,
+// //   CheckCircle,
+// //   Star,
+// //   BarChart3
+// // } from "lucide-react";
+// // import { useState, useEffect } from "react";
+// // import SidebarItem from "../components/SidebarItem";
+// // import logo from "../assets/logo-india.png";
+
+// // export default function AdminLayout() {
+// //   const navigate = useNavigate();
+// //   const location = useLocation();
+// //   const [sidebarOpen, setSidebarOpen] = useState(true);
+// //   const [notifications, setNotifications] = useState(3);
+// //   const [userName] = useState("Admin User");
+// //   const [userRole] = useState("Administrator");
+
+// //   // Menu items with orange, green, and white theme
+// //   const menuItems = [
+// //     {
+// //       icon: LayoutDashboard,
+// //       title: "Dashboard",
+// //       path: "/dashboard",
+// //       color: "orange",
+// //       iconColor: "text-orange-600",
+// //       bgColor: "bg-orange-50"
+// //     },
+// //     {
+// //       icon: BookOpen,
+// //       title: "Bookings",
+// //       path: "/bookings",
+// //       color: "green",
+// //       iconColor: "text-green-600",
+// //       bgColor: "bg-green-50"
+// //     },
+// //     {
+// //       icon: Home,
+// //       title: "Masters",
+// //       path: "/masters",
+// //       color: "orange",
+// //       iconColor: "text-orange-600",
+// //       bgColor: "bg-orange-50"
+// //     },
+// //     {
+// //       icon: Users,
+// //       title: "Staff",
+// //       path: "/staff",
+// //       color: "green",
+// //       iconColor: "text-green-600",
+// //       bgColor: "bg-green-50"
+// //     },
+// //     {
+// //       icon: SettingsIcon,
+// //       title: "Settings",
+// //       path: "/settings",
+// //       color: "orange",
+// //       iconColor: "text-orange-600",
+// //       bgColor: "bg-orange-50"
+// //     },
+// //     {
+// //       icon: FileText,
+// //       title: "Reports",
+// //       path: "/reports",
+// //       color: "green",
+// //       iconColor: "text-green-600",
+// //       bgColor: "bg-green-50"
+// //     },
+// //   ];
+
+// //   const handleLogout = () => {
+// //     localStorage.removeItem('authToken');
+// //     navigate('/login');
+// //   };
+
+// //   const getPageTitle = () => {
+// //     const item = menuItems.find(item => item.path === location.pathname);
+// //     return item ? item.title : "Dashboard";
+// //   };
+
+// //   // Current time display
+// //   const [currentTime, setCurrentTime] = useState('');
+// //   useEffect(() => {
+// //     const updateTime = () => {
+// //       const now = new Date();
+// //       const timeString = now.toLocaleTimeString('en-IN', {
+// //         hour: '2-digit',
+// //         minute: '2-digit',
+// //         hour12: true
+// //       });
+// //       setCurrentTime(timeString);
+// //     };
+    
+// //     updateTime();
+// //     const interval = setInterval(updateTime, 60000);
+// //     return () => clearInterval(interval);
+// //   }, []);
+
+// //   return (
+// //     <div className="min-h-screen flex bg-gradient-to-br from-gray-50 to-white">
+// //       {/* Mobile Overlay */}
+// //       {!sidebarOpen && (
+// //         <div 
+// //           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+// //           onClick={() => setSidebarOpen(false)}
+// //         />
+// //       )}
+
+// //       {/* Sidebar - Orange, Green & White Theme */}
+// //       <aside className={`
+// //         fixed lg:static inset-y-0 left-0 z-50
+// //         w-72
+// //         transform transition-transform duration-300 ease-in-out
+// //         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+// //         flex flex-col
+// //         bg-gradient-to-b from-white to-gray-50
+// //         border-r border-gray-200
+// //         shadow-2xl
+// //       `}>
+// //         {/* Logo Section - Orange Header */}
+// //         <div className="h-24 flex items-center gap-4 px-6 bg-gradient-to-r from-orange-600 to-orange-500">
+// //           <div className="relative">
+// //             <img 
+// //               src={logo} 
+// //               alt="Constitution Club of India" 
+// //               className="h-16 w-16 object-contain filter brightness-0 invert drop-shadow-lg"
+// //             />
+// //             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+// //           </div>
+// //           <div className="text-white">
+// //             <p className="font-bold text-lg tracking-wide drop-shadow">Constitution Club</p>
+// //             <p className="text-xs text-orange-100 tracking-tight">of India</p>
+// //             <p className="text-xs text-green-300 font-medium mt-1">• Premium Hospitality •</p>
+// //           </div>
+// //           <button
+// //             onClick={() => setSidebarOpen(false)}
+// //             className="lg:hidden absolute right-4 top-4 text-white/80 hover:text-white"
+// //           >
+// //             <X className="w-5 h-5" />
+// //           </button>
+// //         </div>
+
+// //         {/* User Profile - Green Card */}
+// //         <div className="p-6 border-b border-gray-100">
+// //           <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100 shadow-sm">
+// //             <div className="relative">
+// //               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-600 to-emerald-500 flex items-center justify-center shadow-md">
+// //                 <User className="w-6 h-6 text-white" />
+// //               </div>
+// //               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+// //             </div>
+// //             <div className="flex-1">
+// //               <p className="text-gray-900 font-semibold">{userName}</p>
+// //               <p className="text-xs text-gray-600">{userRole}</p>
+// //               <div className="flex items-center gap-1 mt-1">
+// //                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+// //                 <span className="text-xs text-green-600 font-medium">Online</span>
+// //               </div>
+// //             </div>
+// //           </div>
+// //         </div>
+
+// //         {/* Current Time & Stats - Orange Card */}
+// //         <div className="px-6 py-4 border-b border-gray-100">
+// //           <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-100 shadow-sm">
+// //             <div className="flex items-center justify-between mb-3">
+// //               <div className="flex items-center gap-2">
+// //                 <Clock className="w-4 h-4 text-orange-600" />
+// //                 <span className="text-sm font-medium text-gray-900">Current Time</span>
+// //               </div>
+// //               <span className="text-lg font-bold text-orange-700">{currentTime}</span>
+// //             </div>
+// //             <div className="flex items-center justify-between">
+// //               <div className="text-center">
+// //                 <p className="text-xs text-gray-600">Active</p>
+// //                 <p className="text-lg font-bold text-green-600">12</p>
+// //               </div>
+// //               <div className="h-8 w-px bg-orange-200"></div>
+// //               <div className="text-center">
+// //                 <p className="text-xs text-gray-600">Revenue</p>
+// //                 <p className="text-lg font-bold text-orange-600">₹45K</p>
+// //               </div>
+// //               <div className="h-8 w-px bg-orange-200"></div>
+// //               <div className="text-center">
+// //                 <p className="text-xs text-gray-600">Rooms</p>
+// //                 <p className="text-lg font-bold text-green-600">24/40</p>
+// //               </div>
+// //             </div>
+// //           </div>
+// //         </div>
+
+// //         {/* Navigation Menu */}
+// //         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+// //           <div className="px-2 py-3">
+// //             <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-3 flex items-center gap-2">
+// //               <div className="w-1 h-4 bg-orange-500 rounded-full"></div>
+// //               Main Menu
+// //             </p>
+// //             {menuItems.map((item) => (
+// //               <SidebarItem
+// //                 key={item.path}
+// //                 icon={item.icon}
+// //                 title={item.title}
+// //                 active={location.pathname === item.path}
+// //                 color={item.color}
+// //                 iconColor={item.iconColor}
+// //                 bgColor={item.bgColor}
+// //                 onClick={() => {
+// //                   navigate(item.path);
+// //                   window.innerWidth < 1024 && setSidebarOpen(false);
+// //                 }}
+// //               />
+// //             ))}
+// //           </div>
+
+// //           {/* Quick Actions - Green Section */}
+// //           <div className="mt-8 px-4 py-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100 mx-2 shadow-sm">
+// //             <p className="text-xs uppercase tracking-wider text-gray-700 font-semibold mb-3 flex items-center gap-2">
+// //               <CheckCircle className="w-3 h-3 text-green-600" />
+// //               Quick Actions
+// //             </p>
+// //             <div className="space-y-3">
+// //               <button className="w-full flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-green-200 hover:border-green-300 hover:shadow-sm transition-all">
+// //                 <Calendar className="w-4 h-4 text-green-600" />
+// //                 <span className="text-sm text-gray-700">Today's Check-ins</span>
+// //                 <span className="ml-auto px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">8</span>
+// //               </button>
+// //               <button className="w-full flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-orange-200 hover:border-orange-300 hover:shadow-sm transition-all">
+// //                 <DollarSign className="w-4 h-4 text-orange-600" />
+// //                 <span className="text-sm text-gray-700">Collect Payment</span>
+// //                 <ChevronRight className="w-3 h-3 text-gray-400 ml-auto" />
+// //               </button>
+// //             </div>
+// //           </div>
+
+// //           {/* Performance Stats - Orange Section */}
+// //           <div className="px-4 py-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100 mx-2 shadow-sm">
+// //             <p className="text-xs uppercase tracking-wider text-gray-700 font-semibold mb-3 flex items-center gap-2">
+// //               <TrendingUp className="w-3 h-3 text-orange-600" />
+// //               Performance
+// //             </p>
+// //             <div className="space-y-2">
+// //               <div className="flex items-center justify-between">
+// //                 <span className="text-sm text-gray-700">Occupancy</span>
+// //                 <div className="flex items-center gap-2">
+// //                   <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+// //                     <div className="h-full bg-green-500 rounded-full" style={{ width: '85%' }}></div>
+// //                   </div>
+// //                   <span className="text-sm font-bold text-green-600">85%</span>
+// //                 </div>
+// //               </div>
+// //               <div className="flex items-center justify-between">
+// //                 <span className="text-sm text-gray-700">Satisfaction</span>
+// //                 <div className="flex items-center gap-2">
+// //                   <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+// //                     <div className="h-full bg-orange-500 rounded-full" style={{ width: '92%' }}></div>
+// //                   </div>
+// //                   <span className="text-sm font-bold text-orange-600">92%</span>
+// //                 </div>
+// //               </div>
+// //             </div>
+// //           </div>
+// //         </nav>
+
+// //         {/* Logout Section */}
+// //         <div className="p-4 border-t border-gray-100">
+// //           <button
+// //             onClick={handleLogout}
+// //             className="w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200 group"
+// //           >
+// //             <div className="p-2 rounded-lg bg-gray-100 group-hover:bg-gray-200">
+// //               <LogOut className="w-4 h-4 text-gray-600" />
+// //             </div>
+// //             <span>Sign Out</span>
+// //             <ChevronRight className="w-4 h-4 ml-auto text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+// //           </button>
+          
+// //           <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+// //             <div className="flex items-center justify-center gap-2 mb-2">
+// //               <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+// //               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+// //               <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+// //             </div>
+// //             <p className="text-xs text-gray-500">CCI HMS v2.1</p>
+// //             <p className="text-xs text-gray-400">Premium Hotel Management</p>
+// //           </div>
+// //         </div>
+// //       </aside>
+
+// //       {/* Main Content */}
+// //       <div className="flex-1 flex flex-col">
+// //         {/* Top Header - Clean White */}
+// //         <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+// //           <div className="h-16 px-6 flex items-center justify-between">
+// //             {/* Left Section */}
+// //             <div className="flex items-center gap-4">
+// //               <button
+// //                 onClick={() => setSidebarOpen(!sidebarOpen)}
+// //                 className="lg:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+// //               >
+// //                 <Menu className="w-5 h-5" />
+// //               </button>
+              
+// //               {/* Page Title with Color Indicator */}
+// //               <div className="flex items-center gap-3">
+// //                 <div className={`
+// //                   w-3 h-8 rounded-full
+// //                   ${location.pathname.includes('dashboard') || location.pathname.includes('masters') || location.pathname.includes('settings') 
+// //                     ? 'bg-orange-500' 
+// //                     : 'bg-green-500'}
+// //                 `}></div>
+// //                 <div>
+// //                   <h1 className="text-xl font-bold text-gray-900">
+// //                     {getPageTitle()}
+// //                   </h1>
+// //                   <p className="text-sm text-gray-600 flex items-center gap-2">
+// //                     <Building2 className="w-3 h-3" />
+// //                     Constitution Club Hotel Management
+// //                   </p>
+// //                 </div>
+// //               </div>
+// //             </div>
+
+// //             {/* Right Section */}
+// //             <div className="flex items-center gap-4">
+// //               {/* Search */}
+// //               <div className="relative hidden md:block">
+// //                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+// //                 <input
+// //                   type="text"
+// //                   placeholder="Search anything..."
+// //                   className="pl-10 pr-4 py-2 w-64 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+// //                 />
+// //               </div>
+
+// //               {/* Notifications */}
+// //               <button className="relative p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100">
+// //                 <Bell className="w-5 h-5" />
+// //                 {notifications > 0 && (
+// //                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border border-white">
+// //                     {notifications}
+// //                   </span>
+// //                 )}
+// //               </button>
+
+// //               {/* User Menu */}
+// //               <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+// //                 <div className="text-right hidden sm:block">
+// //                   <p className="text-sm font-medium text-gray-900">{userName}</p>
+// //                   <p className="text-xs text-gray-500 flex items-center gap-1">
+// //                     <Shield className="w-3 h-3" />
+// //                     {userRole}
+// //                   </p>
+// //                 </div>
+// //                 <div className="relative">
+// //                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-600 to-emerald-500 flex items-center justify-center text-white font-semibold shadow-md">
+// //                     {userName.charAt(0)}
+// //                   </div>
+// //                   <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+// //                 </div>
+// //               </div>
+// //             </div>
+// //           </div>
+
+// //           {/* Breadcrumb - Orange/Green Indicators */}
+// //           <div className="px-6 py-2 border-t border-gray-100 bg-gray-50/50">
+// //             <div className="flex items-center gap-2 text-sm">
+// //               <button 
+// //                 onClick={() => navigate('/dashboard')}
+// //                 className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
+// //               >
+// //                 <Home className="w-3 h-3" />
+// //                 Home
+// //               </button>
+// //               <ChevronRight className="w-3 h-3 text-gray-400" />
+// //               <span className="text-gray-900 font-medium flex items-center gap-2">
+// //                 {location.pathname.includes('dashboard') || location.pathname.includes('masters') || location.pathname.includes('settings') ? (
+// //                   <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+// //                 ) : (
+// //                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+// //                 )}
+// //                 {getPageTitle()}
+// //               </span>
+// //             </div>
+// //           </div>
+// //         </header>
+
+// //         {/* Main Content Area */}
+// //         <main className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
+// //           <div className="p-6">
+// //             <Outlet />
+// //           </div>
+          
+// //           {/* Footer */}
+// //           <footer className="border-t border-gray-200 bg-white">
+// //             <div className="px-6 py-4">
+// //               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+// //                 <div className="flex items-center gap-3">
+// //                   <div className="flex items-center gap-2">
+// //                     <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+// //                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+// //                     <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+// //                   </div>
+// //                   <span className="text-sm text-gray-600">
+// //                     Constitution Club of India • Premium Hospitality
+// //                   </span>
+// //                 </div>
+// //                 <div className="flex items-center gap-4 text-sm text-gray-600">
+// //                   <div className="flex items-center gap-2">
+// //                     <Activity className="w-3 h-3 text-green-500" />
+// //                     <span>System Active</span>
+// //                   </div>
+// //                   <span>•</span>
+// //                   <span>v2.1.0</span>
+// //                   <span>•</span>
+// //                   <span>© {new Date().getFullYear()}</span>
+// //                   <span>•</span>
+// //                   <div className="flex items-center gap-1">
+// //                     <Star className="w-3 h-3 text-orange-500" />
+// //                     <span>Premium Edition</span>
+// //                   </div>
+// //                 </div>
+// //               </div>
+// //             </div>
+// //           </footer>
+// //         </main>
+// //       </div>
+// //     </div>
+// //   );
+// // }
+
+
+
+// // 📁 layout/AdminLayout.jsx
+// import { Outlet, useNavigate, useLocation } from "react-router-dom";
+// import {
+//   LayoutDashboard,
+//   BookOpen,
+//   Settings as SettingsIcon,
+//   FileText,
+//   Users,
+//   LogOut,
+//   User,
+//   Home,
+//   ChevronRight,
+//   Bell,
+//   Search,
+//   Menu,
+//   X,
+//   Building2,
+//   Calendar,
+//   DollarSign,
+//   Shield,
+//   Hotel,
+//   Clock,
+//   Activity,
+//   TrendingUp,
+//   CheckCircle,
+//   Star,
+//   BarChart3,
+//   Moon,
+//   Sun,
+//   Eye,
+//   EyeOff,
+//   CreditCard,
+//   Bed,
+//   RefreshCw
+// } from "lucide-react";
+// import { useState, useEffect } from "react";
+// import SidebarItem from "../components/SidebarItem";
+// import logo from "../assets/logo-india.png";
+
+// export default function AdminLayout() {
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const [sidebarOpen, setSidebarOpen] = useState(true);
+//   const [darkMode, setDarkMode] = useState(() => {
+//     // Check localStorage or system preference
+//     const saved = localStorage.getItem('darkMode');
+//     return saved ? JSON.parse(saved) : false;
+//   });
+//   const [notifications, setNotifications] = useState(3);
+//   const [userName] = useState("Admin User");
+//   const [userRole] = useState("Administrator");
+
+//   // Save dark mode preference
+//   useEffect(() => {
+//     localStorage.setItem('darkMode', JSON.stringify(darkMode));
+//     if (darkMode) {
+//       document.documentElement.classList.add('dark');
+//     } else {
+//       document.documentElement.classList.remove('dark');
+//     }
+//   }, [darkMode]);
+
+//   // Menu items with consistent color scheme
+//   const menuItems = [
+//     {
+//       icon: LayoutDashboard,
+//       title: "Dashboard",
+//       path: "/dashboard",
+//       color: "primary", // Blue for primary actions
+//       gradient: "from-blue-500 to-cyan-500"
+//     },
+//     {
+//       icon: BookOpen,
+//       title: "Bookings",
+//       path: "/bookings",
+//       color: "orange",
+//       gradient: "from-orange-500 to-amber-500"
+//     },
+//     {
+//       icon: Home,
+//       title: "Masters",
+//       path: "/masters",
+//       color: "green",
+//       gradient: "from-emerald-500 to-teal-500"
+//     },
+//     {
+//       icon: Users,
+//       title: "Staff",
+//       path: "/staff",
+//       color: "purple",
+//       gradient: "from-purple-500 to-violet-500"
+//     },
+//     {
+//       icon: SettingsIcon,
+//       title: "Settings",
+//       path: "/settings",
+//       color: "gray",
+//       gradient: "from-gray-600 to-gray-700"
+//     },
+//     {
+//       icon: FileText,
+//       title: "Reports",
+//       path: "/reports",
+//       color: "rose",
+//       gradient: "from-rose-500 to-pink-500"
+//     },
+//   ];
+
+//   const handleLogout = () => {
+//     localStorage.removeItem('authToken');
+//     navigate('/login');
+//   };
+
+//   const getPageTitle = () => {
+//     const item = menuItems.find(item => item.path === location.pathname);
+//     return item ? item.title : "Dashboard";
+//   };
+
+//   // Current time display
+//   const [currentTime, setCurrentTime] = useState('');
+//   useEffect(() => {
+//     const updateTime = () => {
+//       const now = new Date();
+//       const timeString = now.toLocaleTimeString('en-IN', {
+//         hour: '2-digit',
+//         minute: '2-digit',
+//         hour12: true
+//       });
+//       setCurrentTime(timeString);
+//     };
+    
+//     updateTime();
+//     const interval = setInterval(updateTime, 60000);
+//     return () => clearInterval(interval);
+//   }, []);
+
+//   // Stats data
+//   const stats = [
+//     { label: "Active Guests", value: "24", icon: User, color: "blue" },
+//     { label: "Revenue Today", value: "₹45.6K", icon: DollarSign, color: "green" },
+//     { label: "Room Occupancy", value: "85%", icon: Hotel, color: "orange" },
+//     { label: "Check-ins", value: "12", icon: Calendar, color: "purple" },
+//   ];
+
+//   return (
+//     <div className={`min-h-screen flex transition-colors duration-200 ${
+//       darkMode 
+//         ? 'dark bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+//         : 'bg-gradient-to-br from-blue-50 via-white to-gray-50'
+//     }`}>
+//       {/* Mobile Overlay */}
+//       {!sidebarOpen && (
+//         <div 
+//           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+//           onClick={() => setSidebarOpen(false)}
+//         />
+//       )}
+
+//       {/* Sidebar - Premium Glass Morphism */}
+//       <aside className={`
+//         fixed lg:static inset-y-0 left-0 z-50
+//         w-80
+//         transform transition-transform duration-300 ease-in-out
+//         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+//         flex flex-col
+//         ${darkMode 
+//           ? 'bg-gray-900/95 backdrop-blur-xl border-r border-gray-800' 
+//           : 'bg-white/95 backdrop-blur-xl border-r border-gray-200'
+//         }
+//         shadow-2xl
+//       `}>
+//         {/* Logo Section */}
+//         <div className={`h-24 flex items-center gap-4 px-6 ${
+//           darkMode 
+//             ? 'bg-gradient-to-r from-blue-900/80 via-blue-800/80 to-cyan-900/80' 
+//             : 'bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500'
+//         }`}>
+//           <div className="relative">
+//             <img 
+//               src={logo} 
+//               alt="Constitution Club of India" 
+//               className="h-16 w-16 object-contain filter brightness-0 invert drop-shadow-lg"
+//             />
+//             <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 ${
+//               darkMode ? 'border-gray-900' : 'border-white'
+//             }`}>
+//               <div className="w-full h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500"></div>
+//             </div>
+//           </div>
+//           <div className="text-white">
+//             <p className="font-bold text-lg tracking-wide drop-shadow-md">Constitution Club</p>
+//             <p className="text-xs text-blue-100/90 tracking-tight">of India</p>
+//             <p className="text-xs text-emerald-300/90 font-medium mt-1">• Luxury Hospitality •</p>
+//           </div>
+//           <button
+//             onClick={() => setSidebarOpen(false)}
+//             className="lg:hidden absolute right-4 top-4 text-white/80 hover:text-white"
+//           >
+//             <X className="w-5 h-5" />
+//           </button>
+//         </div>
+
+//         {/* User Profile */}
+//         <div className="p-6">
+//           <div className={`flex items-center gap-4 p-4 rounded-2xl ${
+//             darkMode 
+//               ? 'bg-gradient-to-r from-gray-800/60 to-gray-900/60 border border-gray-700/50' 
+//               : 'bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100'
+//           }`}>
+//             <div className="relative">
+//               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+//                 <User className="w-6 h-6 text-white" />
+//               </div>
+//               <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 ${
+//                 darkMode ? 'border-gray-900' : 'border-white'
+//               }`}>
+//                 <div className="w-full h-full rounded-full bg-green-500"></div>
+//               </div>
+//             </div>
+//             <div className="flex-1">
+//               <p className={`font-semibold ${
+//                 darkMode ? 'text-white' : 'text-gray-900'
+//               }`}>{userName}</p>
+//               <p className={`text-xs ${
+//                 darkMode ? 'text-gray-400' : 'text-gray-600'
+//               }`}>{userRole}</p>
+//               <div className="flex items-center gap-2 mt-1">
+//                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+//                 <span className={`text-xs font-medium ${
+//                   darkMode ? 'text-green-400' : 'text-green-600'
+//                 }`}>Online</span>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Quick Stats */}
+//         <div className="px-6 pb-4">
+//           <div className={`grid grid-cols-2 gap-3 p-4 rounded-2xl ${
+//             darkMode 
+//               ? 'bg-gray-800/40 border border-gray-700/30' 
+//               : 'bg-white/60 border border-gray-100 backdrop-blur-sm'
+//           }`}>
+//             {stats.map((stat, index) => (
+//               <div key={index} className="text-center">
+//                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2 ${
+//                   stat.color === 'blue' ? 'bg-blue-100 text-blue-600' :
+//                   stat.color === 'green' ? 'bg-emerald-100 text-emerald-600' :
+//                   stat.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+//                   'bg-purple-100 text-purple-600'
+//                 } ${darkMode ? 'bg-opacity-20' : ''}`}>
+//                   <stat.icon className="w-4 h-4" />
+//                 </div>
+//                 <p className={`text-lg font-bold ${
+//                   darkMode ? 'text-white' : 'text-gray-900'
+//                 }`}>{stat.value}</p>
+//                 <p className={`text-xs ${
+//                   darkMode ? 'text-gray-400' : 'text-gray-600'
+//                 }`}>{stat.label}</p>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+
+//         {/* Navigation Menu */}
+//         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+//           <div className="px-2 py-3">
+//             <p className={`text-xs uppercase tracking-wider font-semibold mb-3 flex items-center gap-2 ${
+//               darkMode ? 'text-gray-400' : 'text-gray-500'
+//             }`}>
+//               <div className="w-1 h-4 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full"></div>
+//               Navigation
+//             </p>
+//             {menuItems.map((item) => (
+//               <SidebarItem
+//                 key={item.path}
+//                 icon={item.icon}
+//                 title={item.title}
+//                 active={location.pathname === item.path}
+//                 gradient={item.gradient}
+//                 darkMode={darkMode}
+//                 onClick={() => {
+//                   navigate(item.path);
+//                   window.innerWidth < 1024 && setSidebarOpen(false);
+//                 }}
+//               />
+//             ))}
+//           </div>
+
+//           {/* Current Time */}
+//           <div className={`px-4 py-4 rounded-xl mx-2 ${
+//             darkMode 
+//               ? 'bg-gradient-to-r from-gray-800/60 to-gray-900/60 border border-gray-700/30' 
+//               : 'bg-gradient-to-r from-blue-50/60 to-cyan-50/60 border border-blue-100'
+//           }`}>
+//             <div className="flex items-center justify-between">
+//               <div className="flex items-center gap-2">
+//                 <Clock className={`w-4 h-4 ${
+//                   darkMode ? 'text-blue-400' : 'text-blue-600'
+//                 }`} />
+//                 <span className={`text-sm font-medium ${
+//                   darkMode ? 'text-gray-300' : 'text-gray-700'
+//                 }`}>Current Time</span>
+//               </div>
+//               <span className={`text-lg font-bold ${
+//                 darkMode ? 'text-cyan-300' : 'text-cyan-600'
+//               }`}>{currentTime}</span>
+//             </div>
+//           </div>
+//         </nav>
+
+//         {/* Footer Section */}
+//         <div className="p-4 border-t border-gray-200/30 dark:border-gray-800/30">
+//           {/* Theme Toggle */}
+//           <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-gray-100/50 dark:bg-gray-800/50">
+//             <div className="flex items-center gap-2">
+//               {darkMode ? (
+//                 <Moon className="w-4 h-4 text-blue-400" />
+//               ) : (
+//                 <Sun className="w-4 h-4 text-amber-500" />
+//               )}
+//               <span className={`text-sm font-medium ${
+//                 darkMode ? 'text-gray-300' : 'text-gray-700'
+//               }`}>
+//                 {darkMode ? 'Dark Mode' : 'Light Mode'}
+//               </span>
+//             </div>
+//             <button
+//               onClick={() => setDarkMode(!darkMode)}
+//               className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+//                 darkMode ? 'bg-blue-600' : 'bg-gray-300'
+//               }`}
+//             >
+//               <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
+//                 darkMode ? 'left-7' : 'left-1'
+//               }`}></div>
+//             </button>
+//           </div>
+
+//           {/* Logout Button */}
+//           <button
+//             onClick={handleLogout}
+//             className={`w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+//               darkMode 
+//                 ? 'text-gray-300 hover:text-white hover:bg-gray-800/60 border border-gray-700/50 hover:border-gray-600/50' 
+//                 : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/60 border border-gray-200 hover:border-gray-300'
+//             }`}
+//           >
+//             <div className={`p-2 rounded-lg ${
+//               darkMode ? 'bg-gray-800/60' : 'bg-gray-100'
+//             }`}>
+//               <LogOut className={`w-4 h-4 ${
+//                 darkMode ? 'text-gray-400' : 'text-gray-600'
+//               }`} />
+//             </div>
+//             <span>Sign Out</span>
+//             <ChevronRight className={`w-4 h-4 ml-auto ${
+//               darkMode ? 'text-gray-600' : 'text-gray-400'
+//             }`} />
+//           </button>
+          
+//           {/* Footer Text */}
+//           <div className="mt-4 pt-4 border-t border-gray-200/30 dark:border-gray-800/30 text-center">
+//             <div className="flex items-center justify-center gap-2 mb-2">
+//               <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+//               <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+//               <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500"></div>
+//             </div>
+//             <p className={`text-xs ${
+//               darkMode ? 'text-gray-500' : 'text-gray-400'
+//             }`}>CCI HMS v2.1 • Premium</p>
+//           </div>
+//         </div>
+//       </aside>
+
+//       {/* Main Content */}
+//       <div className="flex-1 flex flex-col overflow-hidden">
+//         {/* Top Header */}
+//         <header className={`sticky top-0 z-40 ${
+//           darkMode 
+//             ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-800/50' 
+//             : 'bg-white/95 backdrop-blur-xl border-b border-gray-200/50'
+//         }`}>
+//           <div className="h-16 px-6 flex items-center justify-between">
+//             {/* Left Section */}
+//             <div className="flex items-center gap-4">
+//               <button
+//                 onClick={() => setSidebarOpen(!sidebarOpen)}
+//                 className="lg:hidden p-2 rounded-xl transition-colors"
+//               >
+//                 <Menu className={`w-5 h-5 ${
+//                   darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+//                 }`} />
+//               </button>
+              
+//               {/* Page Title */}
+//               <div className="flex items-center gap-3">
+//                 <div className={`
+//                   w-2 h-8 rounded-full bg-gradient-to-b
+//                   ${location.pathname === '/dashboard' ? 'from-blue-500 to-cyan-500' :
+//                     location.pathname === '/bookings' ? 'from-orange-500 to-amber-500' :
+//                     location.pathname === '/masters' ? 'from-emerald-500 to-teal-500' :
+//                     location.pathname === '/staff' ? 'from-purple-500 to-violet-500' :
+//                     location.pathname === '/settings' ? 'from-gray-600 to-gray-700' :
+//                     'from-rose-500 to-pink-500'}
+//                 `}></div>
+//                 <div>
+//                   <h1 className={`text-xl font-bold ${
+//                     darkMode ? 'text-white' : 'text-gray-900'
+//                   }`}>
+//                     {getPageTitle()}
+//                   </h1>
+//                   <p className={`text-sm flex items-center gap-2 ${
+//                     darkMode ? 'text-gray-400' : 'text-gray-600'
+//                   }`}>
+//                     <Building2 className="w-3 h-3" />
+//                     Constitution Club Hotel Management
+//                   </p>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Right Section */}
+//             <div className="flex items-center gap-4">
+//               {/* Search */}
+//               <div className="relative hidden md:block">
+//                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
+//                   darkMode ? 'text-gray-500' : 'text-gray-400'
+//                 }`} />
+//                 <input
+//                   type="text"
+//                   placeholder="Search..."
+//                   className={`pl-10 pr-4 py-2 w-64 rounded-xl text-sm transition-colors ${
+//                     darkMode 
+//                       ? 'bg-gray-800/50 border border-gray-700/50 text-gray-300 placeholder-gray-500 focus:bg-gray-800 focus:border-blue-500/50' 
+//                       : 'bg-gray-100/50 border border-gray-200/50 text-gray-700 placeholder-gray-400 focus:bg-white focus:border-blue-500/50'
+//                   } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+//                 />
+//               </div>
+
+//               {/* Notifications */}
+//               <button className={`relative p-2 rounded-xl transition-colors ${
+//                 darkMode 
+//                   ? 'hover:bg-gray-800/50 text-gray-400 hover:text-white' 
+//                   : 'hover:bg-gray-100/50 text-gray-600 hover:text-gray-900'
+//               }`}>
+//                 <Bell className="w-5 h-5" />
+//                 {notifications > 0 && (
+//                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
+//                     {notifications}
+//                   </span>
+//                 )}
+//               </button>
+
+//               {/* Refresh Button */}
+//               <button className={`p-2 rounded-xl transition-colors ${
+//                 darkMode 
+//                   ? 'hover:bg-gray-800/50 text-gray-400 hover:text-white' 
+//                   : 'hover:bg-gray-100/50 text-gray-600 hover:text-gray-900'
+//               }`}>
+//                 <RefreshCw className="w-5 h-5" />
+//               </button>
+
+//               {/* User Menu */}
+//               <div className="flex items-center gap-3 pl-4 border-l border-gray-700/30 dark:border-gray-700/30">
+//                 <div className="text-right hidden sm:block">
+//                   <p className={`text-sm font-medium ${
+//                     darkMode ? 'text-white' : 'text-gray-900'
+//                   }`}>{userName}</p>
+//                   <p className={`text-xs flex items-center gap-1 ${
+//                     darkMode ? 'text-gray-400' : 'text-gray-500'
+//                   }`}>
+//                     <Shield className="w-3 h-3" />
+//                     {userRole}
+//                   </p>
+//                 </div>
+//                 <div className="relative">
+//                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold shadow-lg">
+//                     {userName.charAt(0)}
+//                   </div>
+//                   <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 ${
+//                     darkMode ? 'border-gray-900' : 'border-white'
+//                   }`}>
+//                     <div className="w-full h-full rounded-full bg-green-500"></div>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Breadcrumb */}
+//           <div className={`px-6 py-2 border-t ${
+//             darkMode 
+//               ? 'border-gray-800/50 bg-gray-900/30' 
+//               : 'border-gray-100/50 bg-white/30'
+//           }`}>
+//             <div className="flex items-center gap-2 text-sm">
+//               <button 
+//                 onClick={() => navigate('/dashboard')}
+//                 className={`flex items-center gap-1 transition-colors ${
+//                   darkMode 
+//                     ? 'text-gray-400 hover:text-white' 
+//                     : 'text-gray-600 hover:text-gray-900'
+//                 }`}
+//               >
+//                 <Home className="w-3 h-3" />
+//                 Home
+//               </button>
+//               <ChevronRight className={`w-3 h-3 ${
+//                 darkMode ? 'text-gray-700' : 'text-gray-300'
+//               }`} />
+//               <span className={`font-medium ${
+//                 darkMode ? 'text-white' : 'text-gray-900'
+//               }`}>
+//                 {getPageTitle()}
+//               </span>
+//             </div>
+//           </div>
+//         </header>
+
+//         {/* Main Content Area */}
+//         <main className="flex-1 overflow-y-auto">
+//           <div className="p-6">
+//             <Outlet />
+//           </div>
+          
+//           {/* Footer */}
+//           <footer className={`border-t ${
+//             darkMode 
+//               ? 'border-gray-800/50 bg-gray-900/50' 
+//               : 'border-gray-200/50 bg-white/50'
+//           }`}>
+//             <div className="px-6 py-4">
+//               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+//                 <div className="flex items-center gap-3">
+//                   <div className="flex items-center gap-1">
+//                     <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+//                     <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+//                     <div className="w-2 h-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-500"></div>
+//                   </div>
+//                   <span className={`text-sm ${
+//                     darkMode ? 'text-gray-400' : 'text-gray-600'
+//                   }`}>
+//                     Constitution Club of India • Luxury Hospitality
+//                   </span>
+//                 </div>
+//                 <div className="flex items-center gap-4 text-sm">
+//                   <div className={`flex items-center gap-2 ${
+//                     darkMode ? 'text-gray-500' : 'text-gray-400'
+//                   }`}>
+//                     <Activity className="w-3 h-3 text-green-500" />
+//                     <span>Live</span>
+//                   </div>
+//                   <span className={darkMode ? 'text-gray-700' : 'text-gray-300'}>•</span>
+//                   <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>v2.1.0</span>
+//                   <span className={darkMode ? 'text-gray-700' : 'text-gray-300'}>•</span>
+//                   <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>© {new Date().getFullYear()}</span>
+//                   <span className={darkMode ? 'text-gray-700' : 'text-gray-300'}>•</span>
+//                   <div className="flex items-center gap-1 text-amber-500">
+//                     <Star className="w-3 h-3" />
+//                     <span>Premium</span>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </footer>
+//         </main>
+//       </div>
+//     </div>
+//   );
+// }
+
+// 📁 layout/AdminLayout.jsx
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  BookOpen,
+  Settings as SettingsIcon,
+  FileText,
+  Users,
+  LogOut,
+  User,
+  Home,
+  ChevronRight,
+  Bell,
+  Search,
+  Menu,
+  X,
+  Building2,
+  Calendar,
+  DollarSign,
+  Shield,
+  Hotel,
+  Clock,
+  Activity,
+  TrendingUp,
+  CheckCircle,
+  Star,
+  BarChart3,
+  Moon,
+  Sun,
+  Eye,
+  EyeOff,
+  CreditCard,
+  Bed,
+  RefreshCw
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import SidebarItem from "../components/SidebarItem";
+import logo from "../assets/logo-india.png";
+
+export default function AdminLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [notifications] = useState(0); // Notifications removed as requested
+  const [userName] = useState("Admin User");
+  const [userRole] = useState("Administrator");
+  
+  // Dynamic data states
+  const [stats, setStats] = useState([
+    { label: "Active Guests", value: "0", icon: User, color: "blue" },
+    { label: "Revenue Today", value: "₹0", icon: DollarSign, color: "green" },
+    { label: "Room Occupancy", value: "0%", icon: Hotel, color: "orange" },
+    { label: "Check-ins", value: "0", icon: Calendar, color: "purple" },
+  ]);
+
+  // Fetch real data on component mount
+  useEffect(() => {
+    fetchDashboardData();
+    
+    // Set up polling for real-time updates (every 30 seconds)
+    const interval = setInterval(fetchDashboardData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch('/api/dashboard/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats([
+          { label: "Active Guests", value: data.activeGuests || "0", icon: User, color: "blue" },
+          { label: "Revenue Today", value: `₹${(data.todayRevenue || 0).toLocaleString('en-IN')}`, icon: DollarSign, color: "green" },
+          { label: "Room Occupancy", value: `${data.occupancyRate || 0}%`, icon: Hotel, color: "orange" },
+          { label: "Today's Check-ins", value: data.todayCheckins || "0", icon: Calendar, color: "purple" },
+        ]);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      // Keep default values if API fails
+    }
+  };
+
+  // Save dark mode preference
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  // Menu items with consistent color scheme
+  const menuItems = [
+    {
+      icon: LayoutDashboard,
+      title: "Dashboard",
+      path: "/dashboard",
+      color: "primary",
+      gradient: "from-blue-500 to-cyan-500"
+    },
+    {
+      icon: BookOpen,
+      title: "Bookings",
+      path: "/bookings",
+      color: "orange",
+      gradient: "from-orange-500 to-amber-500"
+    },
+    {
+      icon: Home,
+      title: "Masters",
+      path: "/masters",
+      color: "green",
+      gradient: "from-emerald-500 to-teal-500"
+    },
+    {
+      icon: Users,
+      title: "Staff",
+      path: "/staff",
+      color: "purple",
+      gradient: "from-purple-500 to-violet-500"
+    },
+    {
+      icon: SettingsIcon,
+      title: "Settings",
+      path: "/settings",
+      color: "gray",
+      gradient: "from-gray-600 to-gray-700"
+    },
+    {
+      icon: FileText,
+      title: "Reports",
+      path: "/reports",
+      color: "rose",
+      gradient: "from-rose-500 to-pink-500"
+    },
+  ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    navigate('/login');
+  };
+
+  const getPageTitle = () => {
+    const item = menuItems.find(item => item.path === location.pathname);
+    return item ? item.title : "Dashboard";
+  };
+
+  // Current time display
+  const [currentTime, setCurrentTime] = useState('');
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      setCurrentTime(timeString);
+    };
+    
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className={`min-h-screen flex transition-colors duration-200 ${
+      darkMode 
+        ? 'dark bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+        : 'bg-gradient-to-br from-blue-50 via-white to-gray-50'
+    }`}>
+      {/* Mobile Overlay */}
+      {!sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-80
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        flex flex-col
+        ${darkMode 
+          ? 'bg-gray-900/95 backdrop-blur-xl border-r border-gray-800' 
+          : 'bg-white/95 backdrop-blur-xl border-r border-gray-200'
+        }
+        shadow-2xl
+      `}>
+        {/* Logo Section - Updated with proper logo handling */}
+        <div className={`h-24 flex items-center gap-4 px-6 ${
+          darkMode 
+            ? 'bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900' 
+            : 'bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500'
+        }`}>
+          <div className="relative">
+            {/* Logo - Now with proper styling */}
+            <img 
+              src={logo} 
+              alt="Constitution Club of India" 
+              className="h-16 w-16 object-contain"
+              style={{
+                filter: darkMode ? 'none' : 'brightness(1.1) contrast(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+              }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "https://via.placeholder.com/64/1e40af/ffffff?text=CCI";
+              }}
+            />
+            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 ${
+              darkMode ? 'border-gray-900' : 'border-white'
+            }`}>
+              <div className="w-full h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500"></div>
+            </div>
+          </div>
+          <div className="flex flex-col">
+            {/* Club Name with Orange, Green, White Gradient */}
+            <div className="flex flex-col">
+              <span className="font-bold text-lg tracking-wide text-white drop-shadow-md">
+                <span className="bg-gradient-to-r from-amber-400 via-white to-emerald-400 bg-clip-text text-transparent">
+                  Constitution Club
+                </span>
+              </span>
+              <span className="text-xs text-white/90 tracking-tight mt-[-2px]">
+                <span className="bg-gradient-to-r from-orange-300 via-white to-emerald-300 bg-clip-text text-transparent">
+                  of India
+                </span>
+              </span>
+              <p className="text-xs text-emerald-300/90 font-medium mt-1">• Luxury Hospitality •</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden absolute right-4 top-4 text-white/80 hover:text-white"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* User Profile */}
+        <div className="p-6">
+          <div className={`flex items-center gap-4 p-4 rounded-2xl ${
+            darkMode 
+              ? 'bg-gradient-to-r from-gray-800/60 to-gray-900/60 border border-gray-700/50' 
+              : 'bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100'
+          }`}>
+            <div className="relative">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 ${
+                darkMode ? 'border-gray-900' : 'border-white'
+              }`}>
+                <div className="w-full h-full rounded-full bg-green-500"></div>
+              </div>
+            </div>
+            <div className="flex-1">
+              <p className={`font-semibold ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>{userName}</p>
+              <p className={`text-xs ${
+                darkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>{userRole}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className={`text-xs font-medium ${
+                  darkMode ? 'text-green-400' : 'text-green-600'
+                }`}>Online</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="px-6 pb-4">
+          <div className={`grid grid-cols-2 gap-3 p-4 rounded-2xl ${
+            darkMode 
+              ? 'bg-gray-800/40 border border-gray-700/30' 
+              : 'bg-white/60 border border-gray-100 backdrop-blur-sm'
+          }`}>
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2 ${
+                  stat.color === 'blue' ? 'bg-blue-100 text-blue-600' :
+                  stat.color === 'green' ? 'bg-emerald-100 text-emerald-600' :
+                  stat.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                  'bg-purple-100 text-purple-600'
+                } ${darkMode ? 'bg-opacity-20' : ''}`}>
+                  <stat.icon className="w-4 h-4" />
+                </div>
+                <p className={`text-lg font-bold ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>{stat.value}</p>
+                <p className={`text-xs ${
+                  darkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <div className="px-2 py-3">
+            <p className={`text-xs uppercase tracking-wider font-semibold mb-3 flex items-center gap-2 ${
+              darkMode ? 'text-gray-400' : 'text-gray-500'
+            }`}>
+              <div className="w-1 h-4 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full"></div>
+              Navigation
+            </p>
+            {menuItems.map((item) => (
+              <SidebarItem
+                key={item.path}
+                icon={item.icon}
+                title={item.title}
+                active={location.pathname === item.path}
+                gradient={item.gradient}
+                darkMode={darkMode}
+                onClick={() => {
+                  navigate(item.path);
+                  window.innerWidth < 1024 && setSidebarOpen(false);
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Current Time */}
+          <div className={`px-4 py-4 rounded-xl mx-2 ${
+            darkMode 
+              ? 'bg-gradient-to-r from-gray-800/60 to-gray-900/60 border border-gray-700/30' 
+              : 'bg-gradient-to-r from-blue-50/60 to-cyan-50/60 border border-blue-100'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className={`w-4 h-4 ${
+                  darkMode ? 'text-blue-400' : 'text-blue-600'
+                }`} />
+                <span className={`text-sm font-medium ${
+                  darkMode ? 'text-gray-300' : 'text-gray-700'
+                }`}>Current Time</span>
+              </div>
+              <span className={`text-lg font-bold ${
+                darkMode ? 'text-cyan-300' : 'text-cyan-600'
+              }`}>{currentTime}</span>
+            </div>
+          </div>
+        </nav>
+
+        {/* Footer Section */}
+        <div className="p-4 border-t border-gray-200/30 dark:border-gray-800/30">
+          {/* Theme Toggle */}
+          <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-gray-100/50 dark:bg-gray-800/50">
+            <div className="flex items-center gap-2">
+              {darkMode ? (
+                <Moon className="w-4 h-4 text-blue-400" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-500" />
+              )}
+              <span className={`text-sm font-medium ${
+                darkMode ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                {darkMode ? 'Dark Mode' : 'Light Mode'}
+              </span>
+            </div>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                darkMode ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
+                darkMode ? 'left-7' : 'left-1'
+              }`}></div>
+            </button>
+          </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+              darkMode 
+                ? 'text-gray-300 hover:text-white hover:bg-gray-800/60 border border-gray-700/50 hover:border-gray-600/50' 
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/60 border border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className={`p-2 rounded-lg ${
+              darkMode ? 'bg-gray-800/60' : 'bg-gray-100'
+            }`}>
+              <LogOut className={`w-4 h-4 ${
+                darkMode ? 'text-gray-400' : 'text-gray-600'
+              }`} />
+            </div>
+            <span>Sign Out</span>
+            <ChevronRight className={`w-4 h-4 ml-auto ${
+              darkMode ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+          </button>
+          
+          {/* Footer Text */}
+          <div className="mt-4 pt-4 border-t border-gray-200/30 dark:border-gray-800/30 text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500"></div>
+            </div>
+            <p className={`text-xs ${
+              darkMode ? 'text-gray-500' : 'text-gray-400'
+            }`}>CCI HMS v2.1 • Premium</p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Header */}
+        <header className={`sticky top-0 z-40 ${
+          darkMode 
+            ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-800/50' 
+            : 'bg-white/95 backdrop-blur-xl border-b border-gray-200/50'
+        }`}>
+          <div className="h-16 px-6 flex items-center justify-between">
+            {/* Left Section */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 rounded-xl transition-colors"
+              >
+                <Menu className={`w-5 h-5 ${
+                  darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+                }`} />
+              </button>
+              
+              {/* Page Title */}
+              <div className="flex items-center gap-3">
+                <div className={`
+                  w-2 h-8 rounded-full bg-gradient-to-b
+                  ${location.pathname === '/dashboard' ? 'from-blue-500 to-cyan-500' :
+                    location.pathname === '/bookings' ? 'from-orange-500 to-amber-500' :
+                    location.pathname === '/masters' ? 'from-emerald-500 to-teal-500' :
+                    location.pathname === '/staff' ? 'from-purple-500 to-violet-500' :
+                    location.pathname === '/settings' ? 'from-gray-600 to-gray-700' :
+                    'from-rose-500 to-pink-500'}
+                `}></div>
+                <div>
+                  <h1 className={`text-xl font-bold ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    {getPageTitle()}
+                  </h1>
+                  <p className={`text-sm flex items-center gap-2 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    <Building2 className="w-3 h-3" />
+                    Constitution Club Hotel Management
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Section */}
+            <div className="flex items-center gap-4">
+              {/* Search */}
+              <div className="relative hidden md:block">
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
+                  darkMode ? 'text-gray-500' : 'text-gray-400'
+                }`} />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className={`pl-10 pr-4 py-2 w-64 rounded-xl text-sm transition-colors ${
+                    darkMode 
+                      ? 'bg-gray-800/50 border border-gray-700/50 text-gray-300 placeholder-gray-500 focus:bg-gray-800 focus:border-blue-500/50' 
+                      : 'bg-gray-100/50 border border-gray-200/50 text-gray-700 placeholder-gray-400 focus:bg-white focus:border-blue-500/50'
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                />
+              </div>
+
+              {/* Notifications - Removed as requested */}
+              {/* <button className={`relative p-2 rounded-xl transition-colors ${
+                darkMode 
+                  ? 'hover:bg-gray-800/50 text-gray-400 hover:text-white' 
+                  : 'hover:bg-gray-100/50 text-gray-600 hover:text-gray-900'
+              }`}>
+                <Bell className="w-5 h-5" />
+                {notifications > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
+                    {notifications}
+                  </span>
+                )}
+              </button> */}
+
+              {/* Refresh Button */}
+              <button 
+                onClick={fetchDashboardData}
+                className={`p-2 rounded-xl transition-colors ${
+                  darkMode 
+                    ? 'hover:bg-gray-800/50 text-gray-400 hover:text-white' 
+                    : 'hover:bg-gray-100/50 text-gray-600 hover:text-gray-900'
+                }`}
+                title="Refresh Data"
+              >
+                <RefreshCw className="w-5 h-5" />
+              </button>
+
+              {/* User Menu */}
+              <div className="flex items-center gap-3 pl-4 border-l border-gray-700/30 dark:border-gray-700/30">
+                <div className="text-right hidden sm:block">
+                  <p className={`text-sm font-medium ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>{userName}</p>
+                  <p className={`text-xs flex items-center gap-1 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
+                    <Shield className="w-3 h-3" />
+                    {userRole}
+                  </p>
+                </div>
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-semibold shadow-lg">
+                    {userName.charAt(0)}
+                  </div>
+                  <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 ${
+                    darkMode ? 'border-gray-900' : 'border-white'
+                  }`}>
+                    <div className="w-full h-full rounded-full bg-green-500"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Breadcrumb */}
+          <div className={`px-6 py-2 border-t ${
+            darkMode 
+              ? 'border-gray-800/50 bg-gray-900/30' 
+              : 'border-gray-100/50 bg-white/30'
+          }`}>
+            <div className="flex items-center gap-2 text-sm">
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className={`flex items-center gap-1 transition-colors ${
+                  darkMode 
+                    ? 'text-gray-400 hover:text-white' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Home className="w-3 h-3" />
+                Home
+              </button>
+              <ChevronRight className={`w-3 h-3 ${
+                darkMode ? 'text-gray-700' : 'text-gray-300'
+              }`} />
+              <span className={`font-medium ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {getPageTitle()}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            <Outlet />
+          </div>
+          
+          {/* Footer */}
+          <footer className={`border-t ${
+            darkMode 
+              ? 'border-gray-800/50 bg-gray-900/50' 
+              : 'border-gray-200/50 bg-white/50'
+          }`}>
+            <div className="px-6 py-4">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-500"></div>
+                  </div>
+                  <span className={`text-sm ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    Constitution Club of India • Luxury Hospitality
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 text-sm">
+                  <div className={`flex items-center gap-2 ${
+                    darkMode ? 'text-gray-500' : 'text-gray-400'
+                  }`}>
+                    <Activity className="w-3 h-3 text-green-500" />
+                    <span>Live</span>
+                  </div>
+                  <span className={darkMode ? 'text-gray-700' : 'text-gray-300'}>•</span>
+                  <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>v2.1.0</span>
+                  <span className={darkMode ? 'text-gray-700' : 'text-gray-300'}>•</span>
+                  <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>© {new Date().getFullYear()}</span>
+                  <span className={darkMode ? 'text-gray-700' : 'text-gray-300'}>•</span>
+                  <div className="flex items-center gap-1 text-amber-500">
+                    <Star className="w-3 h-3" />
+                    <span>Premium</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </footer>
+        </main>
+      </div>
+    </div>
+  );
+}
