@@ -551,10 +551,15 @@ export default function Dashboard() {
     const checkinsTrend = stats.today?.checkins_trend || "+0%";
     const checkoutsTrend = stats.today?.checkouts_trend || "+0%";
 
+    // ✅ Compute occupancy rate from API: occupancy.occupied / occupancy.total
+    const occOccupied = stats.occupancy?.occupied ?? 0;
+    const occTotal    = stats.occupancy?.total    ?? 0;
+    const occupancyPct = occTotal > 0 ? Math.round((occOccupied / occTotal) * 100) : 0;
+
     return [
       {
         title: "Active Check-ins",
-        value: stats.today?.active_checkins || 0,
+        value: stats.today?.active_checkins ?? 0,
         color: "green",
         icon: <Users className="w-5 h-5" />,
         subtitle: "Today",
@@ -563,7 +568,7 @@ export default function Dashboard() {
       },
       {
         title: "Pending Check-outs",
-        value: stats.today?.pending_checkouts || 0,
+        value: stats.today?.pending_checkouts ?? 0,
         color: "orange",
         icon: <Clock className="w-5 h-5" />,
         subtitle: "Awaiting",
@@ -571,20 +576,20 @@ export default function Dashboard() {
         change: getTrendDirection(checkoutsTrend) === 'positive' ? 'negative' : 'positive'
       },
       {
-        title: "Avg Monthly Revenue",
-        value: `₹${avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+        title: "Today's Revenue",
+        value: `₹${(stats.today?.total_revenue ?? 0).toLocaleString("en-IN")}`,
         color: "green",
         icon: <DollarSign className="w-5 h-5" />,
-        subtitle: "Yearly Average",
+        subtitle: `Avg/mo: ₹${avgRevenue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`,
         trend: "+8.5%",
         change: "positive"
       },
       {
         title: "Occupancy Rate",
-        value: `${stats.occupancy?.rate || 72}%`,
+        value: `${occupancyPct}%`,
         color: "orange",
         icon: <Hotel className="w-5 h-5" />,
-        subtitle: "Current Month",
+        subtitle: `${occOccupied} / ${occTotal} Rooms`,
         trend: "+2.4%",
         change: "positive"
       }

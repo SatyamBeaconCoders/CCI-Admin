@@ -423,16 +423,7 @@ export default function Bookings() {
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                resetForm();
-                setShowForm(true);
-              }}
-              className="px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 whitespace-nowrap"
-            >
-              <Calendar className="w-4 h-4" />
-              New Booking
-            </button>
+          
           </div>
         </div>
 
