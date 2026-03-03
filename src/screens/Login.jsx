@@ -1,489 +1,4 @@
 
-// // // import { useState } from "react";
-// // // import { useNavigate } from "react-router-dom";
-
-
-// // // export default function Login() {
-// // //   const [username, setUsername] = useState("");
-// // //   const [password, setPassword] = useState("");
-// // //   const navigate = useNavigate();
-
-
-// // //   const handleLogin = (e) => {
-// // //     e.preventDefault();
-
-// // //     if (!username || !password) {
-// // //       alert("Username aur Password dono required hai");
-// // //       return;
-// // //     }
-
-// // //     // alert("Login successful (dummy)");
-// // //       navigate("/dashboard");
-// // //   };
-
-// // //   return (
-// // //     <div className="min-h-screen flex items-center justify-center bg-slate-100">
-// // //       {/* Card */}
-// // //       <div className="w-full max-w-md bg-white rounded-xl shadow-xl px-8 py-10">
-// // //         {/* Header */}
-// // //         <div className="text-center mb-8">
-// // //           <h1 className="text-2xl font-bold text-blue-900">
-// // //             Constitution Club of India
-// // //           </h1>
-// // //           <p className="mt-2 text-sm text-gray-600">
-// // //             Admin & Reception Management System
-// // //           </p>
-// // //         </div>
-
-// // //         {/* Form */}
-// // //         <form onSubmit={handleLogin} className="space-y-5">
-// // //           <div>
-// // //             <label className="block text-sm font-medium text-gray-700 mb-1">
-// // //               Username
-// // //             </label>
-// // //             <input
-// // //               type="text"
-// // //               placeholder="Enter username"
-// // //               value={username}
-// // //               onChange={(e) => setUsername(e.target.value)}
-// // //               className="w-full rounded-md border border-gray-300 px-3 py-2
-// // //                          focus:outline-none focus:ring-2 focus:ring-blue-700
-// // //                          focus:border-blue-700"
-// // //             />
-// // //           </div>
-
-// // //           <div>
-// // //             <label className="block text-sm font-medium text-gray-700 mb-1">
-// // //               Password
-// // //             </label>
-// // //             <input
-// // //               type="password"
-// // //               placeholder="Enter password"
-// // //               value={password}
-// // //               onChange={(e) => setPassword(e.target.value)}
-// // //               className="w-full rounded-md border border-gray-300 px-3 py-2
-// // //                          focus:outline-none focus:ring-2 focus:ring-blue-700
-// // //                          focus:border-blue-700"
-// // //             />
-// // //           </div>
-
-// // //           <button
-// // //             type="submit"
-// // //             className="w-full bg-blue-800 hover:bg-blue-900
-// // //                        text-white font-semibold py-2.5 rounded-md
-// // //                        transition"
-// // //           >
-// // //             Login
-// // //           </button>
-// // //         </form>
-
-// // //         {/* Footer */}
-// // //         <p className="mt-8 text-center text-xs text-gray-500">
-// // //           Authorized personnel only • © Constitution Club of India
-// // //         </p>
-// // //       </div>
-// // //     </div>
-// // //   );
-// // // }
-
-// // import { useState } from "react";
-// // import { useNavigate } from "react-router-dom";
-// // import { loginService } from "../services/authServices";
-
-// // export default function Login() {
-// //   const [username, setUsername] = useState("");
-// //   const [password, setPassword] = useState("");
-// //   const [loading, setLoading] = useState(false);
-// //   const navigate = useNavigate();
-
-// //   const handleLogin = async (e) => {
-// //     e.preventDefault();
-
-// //     if (!username || !password) {
-// //       alert("Username aur Password dono required hai");
-// //       return;
-// //     }
-
-// //     try {
-// //       setLoading(true);
-
-// //       await loginService({
-// //         username,
-// //         password,
-// //       });
-
-// //       // ✅ success
-// //       navigate("/dashboard");
-// //     } catch (error) {
-// //       console.error(error);
-
-// //       // ❌ error message backend se
-// //       alert(
-// //         error?.response?.data?.message ||
-// //           "Login failed, please check credentials"
-// //       );
-// //     } finally {
-// //       setLoading(false);
-// //     }
-// //   };
-
-// //   return (
-// //     <div className="min-h-screen flex items-center justify-center bg-slate-100">
-// //       {/* Card */}
-// //       <div className="w-full max-w-md bg-white rounded-xl shadow-xl px-8 py-10">
-// //         {/* Header */}
-// //         <div className="text-center mb-8">
-// //           <h1 className="text-2xl font-bold text-blue-900">
-// //             Constitution Club of India
-// //           </h1>
-// //           <p className="mt-2 text-sm text-gray-600">
-// //             Admin & Reception Management System
-// //           </p>
-// //         </div>
-
-// //         {/* Form */}
-// //         <form onSubmit={handleLogin} className="space-y-5">
-// //           <div>
-// //             <label className="block text-sm font-medium text-gray-700 mb-1">
-// //               Username
-// //             </label>
-// //             <input
-// //               type="text"
-// //               placeholder="Enter username"
-// //               value={username}
-// //               onChange={(e) => setUsername(e.target.value)}
-// //               className="w-full rounded-md border border-gray-300 px-3 py-2
-// //                          focus:outline-none focus:ring-2 focus:ring-blue-700
-// //                          focus:border-blue-700"
-// //             />
-// //           </div>
-
-// //           <div>
-// //             <label className="block text-sm font-medium text-gray-700 mb-1">
-// //               Password
-// //             </label>
-// //             <input
-// //               type="password"
-// //               placeholder="Enter password"
-// //               value={password}
-// //               onChange={(e) => setPassword(e.target.value)}
-// //               className="w-full rounded-md border border-gray-300 px-3 py-2
-// //                          focus:outline-none focus:ring-2 focus:ring-blue-700
-// //                          focus:border-blue-700"
-// //             />
-// //           </div>
-
-// //           <button
-// //             type="submit"
-// //             disabled={loading}
-// //             className={`w-full text-white font-semibold py-2.5 rounded-md transition
-// //               ${
-// //                 loading
-// //                   ? "bg-blue-400 cursor-not-allowed"
-// //                   : "bg-blue-800 hover:bg-blue-900"
-// //               }`}
-// //           >
-// //             {loading ? "Logging in..." : "Login"}
-// //           </button>
-// //         </form>
-
-// //         {/* Footer */}
-// //         <p className="mt-8 text-center text-xs text-gray-500">
-// //           Authorized personnel only • © Constitution Club of India
-// //         </p>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-
-// import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { loginService } from "../services/authServices";
-// import { 
-//   Building2, 
-//   Lock, 
-//   User, 
-//   Eye, 
-//   EyeOff,
-//   ShieldCheck,
-//   Smartphone,
-//   Mail
-// } from "lucide-react";
-
-// export default function Login() {
-//   const [username, setUsername] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [showPassword, setShowPassword] = useState(false);
-//   const [loading, setLoading] = useState(false);
-//   const [rememberMe, setRememberMe] = useState(false);
-//   const navigate = useNavigate();
-
-//   const handleLogin = async (e) => {
-//     e.preventDefault();
-
-//     if (!username || !password) {
-//       alert("Username aur Password dono required hai");
-//       return;
-//     }
-
-//     try {
-//       setLoading(true);
-//       await loginService({ username, password });
-//       navigate("/dashboard");
-//     } catch (error) {
-//       console.error(error);
-//       alert(
-//         error?.response?.data?.message ||
-//           "Login failed, please check credentials"
-//       );
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen flex bg-gradient-to-br from-blue-50 via-white to-slate-50">
-//       {/* Left Side - Brand & Info */}
-//       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-gradient-to-br from-blue-900 to-blue-700 text-white">
-//         <div className="flex items-center space-x-3">
-//           <div className="p-3 bg-white/20 rounded-xl">
-//             <Building2 className="w-8 h-8" />
-//           </div>
-//           <div>
-//             <h1 className="text-2xl font-bold">Constitution Club</h1>
-//             <p className="text-blue-200 text-sm">Of India</p>
-//           </div>
-//         </div>
-
-//         <div className="space-y-8 max-w-lg">
-//           <div>
-//             <h2 className="text-3xl font-bold mb-4">
-//               Premier Administrative Portal
-//             </h2>
-//             <p className="text-blue-100 leading-relaxed">
-//               Secure access to the comprehensive management system for 
-//               bookings, staff coordination, and operational analytics.
-//             </p>
-//           </div>
-
-//           <div className="grid grid-cols-2 gap-6">
-//             <div className="flex items-start space-x-3">
-//               <div className="p-2 bg-white/10 rounded-lg">
-//                 <ShieldCheck className="w-5 h-5" />
-//               </div>
-//               <div>
-//                 <h4 className="font-semibold">Bank-Grade Security</h4>
-//                 <p className="text-sm text-blue-200">AES-256 Encryption</p>
-//               </div>
-//             </div>
-//             <div className="flex items-start space-x-3">
-//               <div className="p-2 bg-white/10 rounded-lg">
-//                 <Smartphone className="w-5 h-5" />
-//               </div>
-//               <div>
-//                 <h4 className="font-semibold">24/7 Access</h4>
-//                 <p className="text-sm text-blue-200">Multi-device Support</p>
-//               </div>
-//             </div>
-//           </div>
-
-//           <div className="bg-white/10 p-6 rounded-2xl">
-//             <div className="flex items-center space-x-4">
-//               <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-//                 <Mail className="w-6 h-6" />
-//               </div>
-//               <div>
-//                 <h4 className="font-semibold">Need Assistance?</h4>
-//                 <p className="text-blue-200 text-sm">admin@constitutionclub.org</p>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="text-sm text-blue-200">
-//           <p>© {new Date().getFullYear()} Constitution Club of India. All rights reserved.</p>
-//         </div>
-//       </div>
-
-//       {/* Right Side - Login Form */}
-//       <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 lg:p-12">
-//         <div className="max-w-md mx-auto w-full">
-//           {/* Mobile Header */}
-//           <div className="lg:hidden mb-10">
-//             <div className="flex items-center justify-center space-x-3 mb-4">
-//               <div className="p-3 bg-blue-100 rounded-xl">
-//                 <Building2 className="w-8 h-8 text-blue-700" />
-//               </div>
-//               <div className="text-center">
-//                 <h1 className="text-2xl font-bold text-blue-900">Constitution Club</h1>
-//                 <p className="text-gray-600">Of India</p>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Form Container */}
-//           <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-10 border border-gray-100">
-//             <div className="mb-10">
-//               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-//                 Welcome Back
-//               </h2>
-//               <p className="text-gray-600">
-//                 Enter your credentials to access the management system
-//               </p>
-//             </div>
-
-//             <form onSubmit={handleLogin} className="space-y-6">
-//               {/* Username Field */}
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-semibold text-gray-700">
-//                   Username
-//                 </label>
-//                 <div className="relative">
-//                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-//                     <User className="w-5 h-5 text-gray-400" />
-//                   </div>
-//                   <input
-//                     type="text"
-//                     placeholder="admin.username"
-//                     value={username}
-//                     onChange={(e) => setUsername(e.target.value)}
-//                     className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-300 
-//                              focus:border-blue-500 focus:ring-4 focus:ring-blue-100
-//                              transition-all duration-200 bg-gray-50"
-//                     autoComplete="username"
-//                   />
-//                 </div>
-//               </div>
-
-//               {/* Password Field */}
-//               <div className="space-y-2">
-//                 <div className="flex justify-between items-center">
-//                   <label className="block text-sm font-semibold text-gray-700">
-//                     Password
-//                   </label>
-//                   <a 
-//                     href="#" 
-//                     className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-//                   >
-//                     Forgot Password?
-//                   </a>
-//                 </div>
-//                 <div className="relative">
-//                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-//                     <Lock className="w-5 h-5 text-gray-400" />
-//                   </div>
-//                   <input
-//                     type={showPassword ? "text" : "password"}
-//                     placeholder="••••••••"
-//                     value={password}
-//                     onChange={(e) => setPassword(e.target.value)}
-//                     className="w-full pl-12 pr-12 py-3.5 rounded-xl border border-gray-300 
-//                              focus:border-blue-500 focus:ring-4 focus:ring-blue-100
-//                              transition-all duration-200 bg-gray-50"
-//                     autoComplete="current-password"
-//                   />
-//                   <button
-//                     type="button"
-//                     onClick={() => setShowPassword(!showPassword)}
-//                     className="absolute right-4 top-1/2 transform -translate-y-1/2"
-//                   >
-//                     {showPassword ? (
-//                       <EyeOff className="w-5 h-5 text-gray-400 hover:text-gray-600" />
-//                     ) : (
-//                       <Eye className="w-5 h-5 text-gray-400 hover:text-gray-600" />
-//                     )}
-//                   </button>
-//                 </div>
-//               </div>
-
-//               {/* Remember Me & Submit */}
-//               <div className="flex items-center justify-between">
-//                 <div className="flex items-center">
-//                   <input
-//                     type="checkbox"
-//                     id="remember"
-//                     checked={rememberMe}
-//                     onChange={(e) => setRememberMe(e.target.checked)}
-//                     className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-//                   />
-//                   <label htmlFor="remember" className="ml-2 text-sm text-gray-700">
-//                     Remember this device
-//                   </label>
-//                 </div>
-//               </div>
-
-//               <button
-//                 type="submit"
-//                 disabled={loading}
-//                 className={`w-full py-4 rounded-xl font-semibold text-white
-//                   transition-all duration-300 transform hover:scale-[1.02]
-//                   ${loading 
-//                     ? "bg-blue-400 cursor-not-allowed" 
-//                     : "bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700"
-//                   } shadow-lg hover:shadow-xl active:scale-[0.99]`}
-//               >
-//                 {loading ? (
-//                   <span className="flex items-center justify-center">
-//                     <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
-//                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-//                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-//                     </svg>
-//                     Authenticating...
-//                   </span>
-//                 ) : (
-//                   "Access Dashboard"
-//                 )}
-//               </button>
-
-//               {/* Divider */}
-//               <div className="relative my-6">
-//                 <div className="absolute inset-0 flex items-center">
-//                   <div className="w-full border-t border-gray-300"></div>
-//                 </div>
-//                 <div className="relative flex justify-center text-sm">
-//                   <span className="px-4 bg-white text-gray-500">
-//                     Alternative Access
-//                   </span>
-//                 </div>
-//               </div>
-
-//               {/* Quick Action */}
-//               <div className="text-center">
-//                 <p className="text-sm text-gray-600 mb-4">
-//                   Using mobile authenticator?
-//                 </p>
-//                 <button
-//                   type="button"
-//                   className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-xl
-//                            text-sm font-medium text-gray-700 bg-white hover:bg-gray-50
-//                            transition-colors duration-200"
-//                 >
-//                   <ShieldCheck className="w-4 h-4 mr-2" />
-//                   Use 2FA Code Instead
-//                 </button>
-//               </div>
-//             </form>
-
-//             {/* Footer */}
-//             <div className="mt-10 pt-6 border-t border-gray-100">
-//               <div className="text-center">
-//                 <p className="text-xs text-gray-500">
-//                   <span className="font-medium">Security Notice:</span> 
-//                   {" "}Your login activity is monitored and logged for security purposes.
-//                   Unauthorized access is prohibited.
-//                 </p>
-//                 <p className="mt-2 text-xs text-gray-400">
-//                   Version 2.1.4 • Last updated: Dec 2023
-//                 </p>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -498,7 +13,8 @@ import {
   TrendingUp,
   Clock,
   CheckCircle,
-  Building2 // Fallback if logo fails
+  Building2, // Fallback if logo fails
+  X
 } from "lucide-react";
 import logo from "../assets/logo-india.png"; // Importing the logo
 
@@ -508,13 +24,15 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (!username || !password) {
-      alert("Username aur Password dono required hai");
+      setError("Please enter your username and password");
       return;
     }
 
@@ -522,11 +40,11 @@ export default function Login() {
       setLoading(true);
       await loginService({ username, password });
       navigate("/dashboard");
-    } catch (error) {
-      console.error(error);
-      alert(
-        error?.response?.data?.message ||
-        "Login failed, please check credentials"
+    } catch (err) {
+      console.error(err);
+      setError(
+        err?.response?.data?.message ||
+        "Invalid login credentials. Please try again."
       );
     } finally {
       setLoading(false);
@@ -699,6 +217,18 @@ export default function Login() {
                   Remember me for 30 days
                 </label>
               </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="p-4 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3 animate-shake">
+                  <div className="p-1.5 rounded-lg bg-red-100/50">
+                    <X className="w-4 h-4 text-red-600" />
+                  </div>
+                  <p className="text-sm font-medium text-red-700 leading-tight">
+                    {error}
+                  </p>
+                </div>
+              )}
 
               {/* Login Button */}
               <button

@@ -5,39 +5,22 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
-  Settings as SettingsIcon,
   FileText,
   Users,
   LogOut,
-  User,
   Home,
   ChevronRight,
-  Bell,
-  Search,
   Menu,
   X,
   Building2,
-  Calendar,
-  DollarSign,
-  Shield,
-  Hotel,
   Clock,
   Activity,
-  TrendingUp,
-  CheckCircle,
   Star,
-  BarChart3,
   Moon,
-  Sun,
-  Eye,
-  EyeOff,
-  CreditCard,
-  Bed,
-  RefreshCw
+  Sun
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import SidebarItem from "../components/SidebarItem";
-import { getDashboardStats } from "../services/dashboardServices";
 import logo from "../assets/logo-india.png";
 
 export default function AdminLayout() {
@@ -49,68 +32,9 @@ export default function AdminLayout() {
     return saved ? JSON.parse(saved) : false;
   });
   const [notifications] = useState(0); // Notifications removed as requested
-  const [searchTerm, setSearchTerm] = useState("");
   
-  // Dynamic data states
-  const [stats, setStats] = useState([
-    { label: "Active Guests", value: "0", icon: User, color: "blue" },
-    { label: "Revenue Today", value: "₹0", icon: DollarSign, color: "green" },
-    { label: "Room Occupancy", value: "0%", icon: Hotel, color: "orange" },
-    { label: "Check-ins", value: "0", icon: Calendar, color: "purple" },
-  ]);
 
-  // Fetch real data on component mount
-  useEffect(() => {
-    fetchDashboardData();
-    
-    // Set up polling for real-time updates (every 30 seconds)
-    const interval = setInterval(fetchDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
-  const fetchDashboardData = async () => {
-    try {
-      const data = await getDashboardStats();
-
-      // ✅ API response structure:
-      // data.today  → { active_checkins, total_revenue, total_bookings, pending_checkouts }
-      // data.occupancy → { total, available, occupied, maintenance }
-
-      const occupied  = data.occupancy?.occupied ?? 0;
-      const total     = data.occupancy?.total    ?? 0;
-      const occupancyPct = total > 0 ? Math.round((occupied / total) * 100) : 0;
-
-      setStats([
-        {
-          label: "Active Guests",
-          value: String(data.today?.active_checkins ?? 0),
-          icon: User,
-          color: "blue"
-        },
-        {
-          label: "Revenue Today",
-          value: `₹${(data.today?.total_revenue ?? 0).toLocaleString("en-IN")}`,
-          icon: DollarSign,
-          color: "green"
-        },
-        {
-          label: "Room Occupancy",
-          value: `${occupancyPct}%`,
-          icon: Hotel,
-          color: "orange"
-        },
-        {
-          label: "Today's Check-ins",
-          value: String(data.today?.total_bookings ?? 0),
-          icon: Calendar,
-          color: "purple"
-        },
-      ]);
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      // Keep default 0 values if API fails
-    }
-  };
 
   // Save dark mode preference
   useEffect(() => {
@@ -152,13 +76,13 @@ export default function AdminLayout() {
       color: "purple",
       gradient: "from-purple-500 to-violet-500"
     },
-    {
-      icon: SettingsIcon,
-      title: "Settings",
-      path: "/settings",
-      color: "gray",
-      gradient: "from-gray-600 to-gray-700"
-    },
+    // {
+    //   icon: SettingsIcon,
+    //   title: "Settings",
+    //   path: "/settings",
+    //   color: "gray",
+    //   gradient: "from-gray-600 to-gray-700"
+    // },
     {
       icon: FileText,
       title: "Reports",
@@ -212,8 +136,8 @@ export default function AdminLayout() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        w-80
+        fixed lg:sticky top-0 left-0 z-50
+        w-80 h-screen
         transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         flex flex-col
@@ -275,33 +199,6 @@ export default function AdminLayout() {
 
         {/* User Profile */}
 
-        {/* Quick Stats */}
-        <div className="px-6 pb-4">
-          <div className={`grid grid-cols-2 gap-3 p-4 rounded-2xl ${
-            darkMode 
-              ? 'bg-gray-800/40 border border-gray-700/30' 
-              : 'bg-white/60 border border-gray-100 backdrop-blur-sm'
-          }`}>
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2 ${
-                  stat.color === 'blue' ? 'bg-blue-100 text-blue-600' :
-                  stat.color === 'green' ? 'bg-emerald-100 text-emerald-600' :
-                  stat.color === 'orange' ? 'bg-orange-100 text-orange-600' :
-                  'bg-purple-100 text-purple-600'
-                } ${darkMode ? 'bg-opacity-20' : ''}`}>
-                  <stat.icon className="w-4 h-4" />
-                </div>
-                <p className={`text-lg font-bold ${
-                  darkMode ? 'text-white' : 'text-gray-900'
-                }`}>{stat.value}</p>
-                <p className={`text-xs ${
-                  darkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Navigation Menu */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

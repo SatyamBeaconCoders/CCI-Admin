@@ -946,7 +946,7 @@
 
 // 📁 screens/Master.jsx (Complete – with scrollable room table)
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Plus, Trash2, Pencil, X, Users, Home, User, Mail, Phone, Key, CheckCircle, AlertCircle, Search } from "lucide-react";
+import { Plus, Trash2, Pencil, X, Users, Home, User, Mail, Phone, Key, CheckCircle, AlertCircle, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 // Import services
 import * as roomService from "../services/roomServices";
@@ -1028,7 +1028,105 @@ function Tab({ label, icon, active, onClick }) {
   );
 }
 
-/* ================= ROOMS MASTER (with scrollable area) ================= */
+/* ================= PAGINATION COMPONENT ================= */
+function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageChange }) {
+  if (totalItems === 0) return null;
+
+  return (
+    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <p className="text-sm text-gray-600 font-medium order-2 sm:order-1">
+        Showing <span className="font-bold text-gray-900">{Math.min((currentPage * itemsPerPage) + 1, totalItems)}</span> to <span className="font-bold text-gray-900">{Math.min((currentPage + 1) * itemsPerPage, totalItems)}</span> of <span className="font-bold text-gray-900">{totalItems}</span> records
+      </p>
+      
+      <div className="flex items-center gap-1 order-1 sm:order-2">
+        <button
+          onClick={() => onPageChange(0)}
+          disabled={currentPage === 0}
+          className={`p-2 rounded-lg transition-all ${
+            currentPage === 0 
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600 active:scale-90'
+          }`}
+          title="First Page"
+        >
+          <ChevronsLeft className="w-5 h-5" />
+        </button>
+        
+        <button
+          onClick={() => onPageChange(Math.max(0, currentPage - 1))}
+          disabled={currentPage === 0}
+          className={`p-2 rounded-lg transition-all mr-2 ${
+            currentPage === 0 
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600 active:scale-90'
+          }`}
+          title="Previous Page"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        <div className="flex items-center gap-1 mx-2">
+          {[...Array(totalPages)].map((_, i) => {
+            if (
+              totalPages <= 7 ||
+              i === 0 ||
+              i === totalPages - 1 ||
+              (i >= currentPage - 1 && i <= currentPage + 1)
+            ) {
+              return (
+                <button
+                  key={i}
+                  onClick={() => onPageChange(i)}
+                  className={`w-9 h-9 rounded-lg text-sm font-bold transition-all ${
+                    currentPage === i
+                      ? 'bg-orange-500 text-white shadow-md shadow-orange-200 transform scale-105'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              );
+            } else if (
+              (i === 1 && currentPage > 2) ||
+              (i === totalPages - 2 && currentPage < totalPages - 3)
+            ) {
+              return <span key={i} className="px-1 text-gray-400">...</span>;
+            }
+            return null;
+          })}
+        </div>
+
+        <button
+          onClick={() => onPageChange(Math.min(totalPages - 1, currentPage + 1))}
+          disabled={currentPage === totalPages - 1}
+          className={`p-2 rounded-lg transition-all ml-2 ${
+            currentPage === totalPages - 1 
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600 active:scale-90'
+          }`}
+          title="Next Page"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+
+        <button
+          onClick={() => onPageChange(totalPages - 1)}
+          disabled={currentPage === totalPages - 1}
+          className={`p-2 rounded-lg transition-all ${
+            currentPage === totalPages - 1 
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600 active:scale-90'
+          }`}
+          title="Last Page"
+        >
+          <ChevronsRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ================= ROOMS MASTER ================= */
 function RoomsMaster({ setError, setLoading }) {
   const [rooms, setRooms] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -1045,9 +1143,9 @@ function RoomsMaster({ setError, setLoading }) {
     price_8day: ""
   });
 
-  // Pagination state – 5 rooms per page
+  // Pagination state – 10 items per page
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize] = useState(5);               // 🔥 ab 5 rooms dikhenge initially
+  const itemsPerPage = 10;
 
   // Room types and statuses
   const roomTypes = ["Single","Double", "Deluxe", "Premium", "Suite", "Family"];
@@ -1081,25 +1179,18 @@ function RoomsMaster({ setError, setLoading }) {
     );
   }, [rooms, searchTerm]);
 
-  // Paginated rooms (current page * pageSize)
+  // Paginated rooms
   const paginatedRooms = useMemo(() => {
-    return filteredRooms.slice(0, (currentPage + 1) * pageSize);
-  }, [filteredRooms, currentPage, pageSize]);
+    return filteredRooms.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+  }, [filteredRooms, currentPage, itemsPerPage]);
 
-  // Check if more rooms are available
-  const hasMore = useMemo(() => {
-    return filteredRooms.length > (currentPage + 1) * pageSize;
-  }, [filteredRooms, currentPage, pageSize]);
+  const totalPages = Math.ceil(filteredRooms.length / itemsPerPage);
 
   // Reset page when search changes
   useEffect(() => {
     setCurrentPage(0);
   }, [searchTerm]);
 
-  // Load more rooms (callback)
-  const loadMoreRooms = useCallback(() => {
-    setCurrentPage(prev => prev + 1);
-  }, []);
 
   const handleSubmit = async () => {
     // Validation – show error inside popup
@@ -1265,15 +1356,11 @@ function RoomsMaster({ setError, setLoading }) {
           </p>
         </div>
       </div>
-
-      {/* 🔥 Scrollable Rooms Table */}
+      {/* Rooms Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div 
-          className="overflow-y-auto" 
-          style={{ maxHeight: '400px' }}   // Fixed height – scroll yahan hoga
-        >
+        <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="sticky top-0 bg-white z-10 shadow-sm">
+            <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Room No</th>
                 <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Type</th>
@@ -1358,20 +1445,17 @@ function RoomsMaster({ setError, setLoading }) {
               )}
             </tbody>
           </table>
-
-          {/* Load More Button – inside scrollable area */}
-          {hasMore && (
-            <div className="flex justify-center py-4 bg-white border-t border-gray-200">
-              <button
-                onClick={loadMoreRooms}
-                className="px-6 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors"
-              >
-                Load More Rooms
-              </button>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredRooms.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Room Form Modal */}
       {showForm && (
@@ -1554,6 +1638,10 @@ function MembersMaster({ setError, setLoading }) {
     address: ""
   });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     fetchMembers();
   }, []);
@@ -1650,6 +1738,18 @@ function MembersMaster({ setError, setLoading }) {
     member.mobile_no?.includes(searchTerm)
   );
 
+  // Paginated members
+  const paginatedMembers = useMemo(() => {
+    return filteredMembers.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+  }, [filteredMembers, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm]);
+
   return (
     <div className="space-y-6">
       {/* Header with Actions */}
@@ -1701,8 +1801,8 @@ function MembersMaster({ setError, setLoading }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredMembers.length > 0 ? (
-                filteredMembers.map((member) => (
+              {paginatedMembers.length > 0 ? (
+                paginatedMembers.map((member) => (
                   <tr key={member.id} className="hover:bg-gray-50">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
@@ -1781,6 +1881,15 @@ function MembersMaster({ setError, setLoading }) {
           </table>
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredMembers.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Member Form Modal */}
       {showForm && (

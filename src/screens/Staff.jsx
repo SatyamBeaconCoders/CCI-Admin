@@ -1,15 +1,118 @@
-// 📁 screens/Staff.jsx
-import { useState, useEffect } from "react";
-import { Plus, Trash2, Pencil, X, User, Search, CheckCircle, AlertCircle, Shield, Key, Mail, Phone } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Plus, Trash2, Pencil, X, User, Search, CheckCircle, AlertCircle, Shield, Key, Mail, Phone, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import * as userService from "../services/userServices";
+
+
+/* ================= PAGINATION COMPONENT ================= */
+function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageChange }) {
+  if (totalItems === 0) return null;
+
+  return (
+    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+      <p className="text-sm text-gray-600 font-medium order-2 sm:order-1">
+        Showing <span className="font-bold text-gray-900">{Math.min((currentPage * itemsPerPage) + 1, totalItems)}</span> to <span className="font-bold text-gray-900">{Math.min((currentPage + 1) * itemsPerPage, totalItems)}</span> of <span className="font-bold text-gray-900">{totalItems}</span> records
+      </p>
+      
+      <div className="flex items-center gap-1 order-1 sm:order-2">
+        <button
+          onClick={() => onPageChange(0)}
+          disabled={currentPage === 0}
+          className={`p-2 rounded-lg transition-all ${
+            currentPage === 0 
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600 active:scale-90'
+          }`}
+          title="First Page"
+        >
+          <ChevronsLeft className="w-5 h-5" />
+        </button>
+        
+        <button
+          onClick={() => onPageChange(Math.max(0, currentPage - 1))}
+          disabled={currentPage === 0}
+          className={`p-2 rounded-lg transition-all mr-2 ${
+            currentPage === 0 
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600 active:scale-90'
+          }`}
+          title="Previous Page"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        <div className="flex items-center gap-1 mx-2">
+          {[...Array(totalPages)].map((_, i) => {
+            if (
+              totalPages <= 7 ||
+              i === 0 ||
+              i === totalPages - 1 ||
+              (i >= currentPage - 1 && i <= currentPage + 1)
+            ) {
+              return (
+                <button
+                  key={i}
+                  onClick={() => onPageChange(i)}
+                  className={`w-9 h-9 rounded-lg text-sm font-bold transition-all ${
+                    currentPage === i
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200 transform scale-105'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              );
+            } else if (
+              (i === 1 && currentPage > 2) ||
+              (i === totalPages - 2 && currentPage < totalPages - 3)
+            ) {
+              return <span key={i} className="px-1 text-gray-400">...</span>;
+            }
+            return null;
+          })}
+        </div>
+
+        <button
+          onClick={() => onPageChange(Math.min(totalPages - 1, currentPage + 1))}
+          disabled={currentPage === totalPages - 1}
+          className={`p-2 rounded-lg transition-all ml-2 ${
+            currentPage === totalPages - 1 
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600 active:scale-90'
+          }`}
+          title="Next Page"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+
+        <button
+          onClick={() => onPageChange(totalPages - 1)}
+          disabled={currentPage === totalPages - 1}
+          className={`p-2 rounded-lg transition-all ${
+            currentPage === totalPages - 1 
+              ? 'text-gray-300 cursor-not-allowed' 
+              : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600 active:scale-90'
+          }`}
+          title="Last Page"
+        >
+          <ChevronsRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function Staff() {
   const [staff, setStaff] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
+
+  // Pagination state – 10 items per page
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
   const [form, setForm] = useState({
     name: "",
     username: "",
@@ -39,14 +142,14 @@ export default function Staff() {
       setLoading(false);
     }
   };
-
   const handleSubmit = async () => {
     if (!form.name || !form.username || (!editingStaff && !form.password)) {
-      setError("Name, username, and password are required");
+      setFormError("Name, username, and password are required");
       return;
     }
 
     try {
+      setFormError("");
       setLoading(true);
       
       const payload = { ...form };
@@ -67,7 +170,7 @@ export default function Staff() {
       setShowForm(false);
     } catch (err) {
       console.error("❌ STAFF SAVE ERROR:", err.response?.data || err);
-      setError(err.response?.data?.message || "Failed to save staff. Please try again.");
+      setFormError(err.response?.data?.message || err.message || "Failed to save staff. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -99,6 +202,7 @@ export default function Staff() {
       phone: ""
     });
     setEditingStaff(null);
+    setFormError("");
   };
 
   const openEdit = (staffMember) => {
@@ -120,11 +224,25 @@ export default function Staff() {
     setShowForm(true);
   };
 
-  const filteredStaff = staff.filter(staffMember =>
-    staffMember.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    staffMember.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    staffMember.role?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStaff = useMemo(() => {
+    return staff.filter(staffMember =>
+      staffMember.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staffMember.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staffMember.role?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [staff, searchTerm]);
+
+  // Paginated staff
+  const paginatedStaff = useMemo(() => {
+    return filteredStaff.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+  }, [filteredStaff, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredStaff.length / itemsPerPage);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm]);
 
   const getRoleColor = (role) => {
     switch (role) {
@@ -238,8 +356,8 @@ export default function Staff() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredStaff.length > 0 ? (
-                  filteredStaff.map((staffMember) => (
+                {paginatedStaff.length > 0 ? (
+                  paginatedStaff.map((staffMember) => (
                     <tr key={staffMember.id} className="hover:bg-gray-50">
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
@@ -336,6 +454,15 @@ export default function Staff() {
           </div>
         </div>
 
+        {/* Pagination Controls */}
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredStaff.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
+
         {/* Staff Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -366,6 +493,17 @@ export default function Staff() {
                   </button>
                 </div>
               </div>
+
+              {/* Error Message Section inside Popup */}
+              {formError && (
+                <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700 flex-1">{formError}</p>
+                  <button onClick={() => setFormError("")}>
+                    <X className="w-4 h-4 text-red-400 hover:text-red-600" />
+                  </button>
+                </div>
+              )}
 
               <div className="p-6 space-y-4">
                 <div>

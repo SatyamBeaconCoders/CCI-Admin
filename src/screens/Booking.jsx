@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calendar, User, Users, Home, X, CheckCircle, AlertCircle, Edit2, Trash2, Eye, Search, Filter, CreditCard, DollarSign, Plus } from "lucide-react";
+import { Calendar, User, Users, Home, X, CheckCircle, AlertCircle, Edit2, Trash2, Eye, Search, Filter, CreditCard, DollarSign, Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import {
   getBookings,
   createBooking,
@@ -20,6 +20,10 @@ export default function Bookings() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -280,6 +284,18 @@ export default function Bookings() {
     return matchesSearch && matchesStatus;
   });
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const paginatedBookings = filteredBookings.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Confirmed": return "bg-blue-100 text-blue-800";
@@ -480,8 +496,8 @@ export default function Bookings() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredBookings.length > 0 ? (
-                  filteredBookings.map((b) => (
+                {paginatedBookings.length > 0 ? (
+                  paginatedBookings.map((b) => (
                     <tr key={b.id} className="hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-6">
                         <div>
@@ -593,6 +609,102 @@ export default function Bookings() {
             </table>
           </div>
         </div>
+
+        {/* Pagination Controls */}
+        {filteredBookings.length > 0 && (
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <p className="text-sm text-gray-600 font-medium order-2 sm:order-1">
+              Showing <span className="font-bold text-gray-900">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-gray-900">{Math.min(currentPage * itemsPerPage, filteredBookings.length)}</span> of <span className="font-bold text-gray-900">{filteredBookings.length}</span> records
+            </p>
+            
+            <div className="flex items-center gap-1 order-1 sm:order-2">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-lg transition-all ${
+                  currentPage === 1 
+                    ? 'text-gray-300 cursor-not-allowed' 
+                    : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600 active:scale-90'
+                }`}
+                title="First Page"
+              >
+                <ChevronsLeft className="w-5 h-5" />
+              </button>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-lg transition-all mr-2 ${
+                  currentPage === 1 
+                    ? 'text-gray-300 cursor-not-allowed' 
+                    : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600 active:scale-90'
+                }`}
+                title="Previous Page"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-1 mx-2">
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageNum = i + 1;
+                  // Show current page, one before, one after, and first/last if many pages
+                  if (
+                    totalPages <= 7 ||
+                    pageNum === 1 ||
+                    pageNum === totalPages ||
+                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-9 h-9 rounded-lg text-sm font-bold transition-all ${
+                          currentPage === pageNum
+                            ? 'bg-orange-500 text-white shadow-md shadow-orange-200 transform scale-105'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (
+                    (pageNum === 2 && currentPage > 4) ||
+                    (pageNum === totalPages - 1 && currentPage < totalPages - 3)
+                  ) {
+                    return <span key={pageNum} className="px-1 text-gray-400">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-lg transition-all ml-2 ${
+                  currentPage === totalPages 
+                    ? 'text-gray-300 cursor-not-allowed' 
+                    : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600 active:scale-90'
+                }`}
+                title="Next Page"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-lg transition-all ${
+                  currentPage === totalPages 
+                    ? 'text-gray-300 cursor-not-allowed' 
+                    : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600 active:scale-90'
+                }`}
+                title="Last Page"
+              >
+                <ChevronsRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Booking Form Modal */}
         {showForm && (
