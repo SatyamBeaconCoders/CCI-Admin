@@ -127,7 +127,7 @@ export default function AdminLayout() {
         : 'bg-gradient-to-br from-blue-50 via-white to-gray-50'
     }`}>
       {/* Mobile Overlay */}
-      {!sidebarOpen && (
+      {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
