@@ -83,7 +83,7 @@ export const getOccupancyReport = async (startDate, endDate) => {
     return response;
   } catch (error) {
     console.error("❌ Occupancy API Error:", error);
-    const roomTypes = ['Deluxe Suite', 'Executive', 'Premium', 'Standard', 'Family'];
+    const roomTypes = ['Single Suite', 'Double Suite'];
     return {
       data: roomTypes.map((type, index) => ({
         type,

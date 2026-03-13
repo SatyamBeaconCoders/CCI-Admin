@@ -34,11 +34,8 @@ import {
 
 
 const ROOM_TYPES = [
-  { name: 'Deluxe Suite', value: 35, color: '#FF9500' },
-  { name: 'Executive', value: 25, color: '#34C759' },
-  { name: 'Premium', value: 20, color: '#5856D6' },
-  { name: 'Standard', value: 15, color: '#FF3B30' },
-  { name: 'Family', value: 5, color: '#AF52DE' }
+  { name: 'Single Suite', value: 60, color: '#FF9500' },
+  { name: 'Double Suite', value: 40, color: '#34C759' }
 ];
 
 export default function Dashboard() {

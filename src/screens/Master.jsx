@@ -164,7 +164,7 @@ function RoomsMaster({ setError, setLoading }) {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
-  const roomTypes = ["Single", "Double", "Deluxe", "Premium", "Suite", "Family"];
+  const roomTypes = ["Single Suite", "Double Suite"];
   const roomStatuses = ["Available", "Booked", "Maintenance", "Cleaning"];
 
   const fetchRooms = async () => {
@@ -457,11 +457,42 @@ function MembersMaster({ setError, setLoading }) {
 
   const totalPages = Math.ceil(filteredMembers.length / itemsPerPage) || 1;
 
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const validateForm = () => {
+    const errors = {};
+
+    if (!form.name?.trim()) {
+      errors.name = "Full Name is required.";
+    }
+    if (!form.membership_no?.trim()) {
+      errors.membership_no = "Member ID is required.";
+    }
+    if (!form.mobile_no?.trim()) {
+      errors.mobile_no = "Mobile number is required.";
+    } else if (!/^[0-9]{10}$/.test(form.mobile_no.trim())) {
+      errors.mobile_no = "Mobile number must be exactly 10 digits.";
+    }
+    if (!form.email?.trim()) {
+      errors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      errors.email = "Please enter a valid email address.";
+    }
+    if (!form.address?.trim()) {
+      errors.address = "Address is required.";
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async () => {
-    if (!form.name || !form.membership_no || !form.mobile_no) {
-      setFormError("Basic details are required.");
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setFormError("Please fill in all required fields correctly.");
       return;
     }
+    setFieldErrors({});
     try {
       setFormError("");
       setLoading(true);
@@ -479,7 +510,12 @@ function MembersMaster({ setError, setLoading }) {
       
       if (err.response?.data?.errors) {
         // Collect all validation errors
-        msg = Object.values(err.response.data.errors).flat().join(" ");
+        const serverErrors = {};
+        Object.entries(err.response.data.errors).forEach(([key, val]) => {
+          serverErrors[key] = Array.isArray(val) ? val[0] : val;
+        });
+        setFieldErrors(serverErrors);
+        msg = "Please correct the highlighted fields.";
       } else {
         msg = err.response?.data?.message || err.response?.data?.error || msg;
       }
@@ -488,6 +524,13 @@ function MembersMaster({ setError, setLoading }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setForm({ name: "", membership_no: "", mobile_no: "", email: "", address: "", is_active: true });
+    setEditingMember(null);
+    setFormError("");
+    setFieldErrors({});
   };
 
   return (
@@ -509,7 +552,7 @@ function MembersMaster({ setError, setLoading }) {
               className="pl-10 pr-4 py-2 border rounded-lg outline-none"
             />
           </div>
-          <button onClick={() => { setEditingMember(null); setForm({ name: "", membership_no: "", mobile_no: "", email: "", address: "", is_active: true }); setShowForm(true); }} className="px-4 py-2 bg-green-600 text-white rounded-lg flex items-center gap-2">
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="px-4 py-2 bg-green-600 text-white rounded-lg flex items-center gap-2">
             <Plus className="w-4 h-4" /> Add Member
           </button>
         </div>
@@ -534,13 +577,19 @@ function MembersMaster({ setError, setLoading }) {
                   <td className="p-4 text-sm">{m.mobile_no}</td>
                   <td className="p-4 flex gap-2">
                     <button onClick={() => { 
-                      setEditingMember(m); 
+                      setEditingMember(m);
+                      setFieldErrors({});
+                      setFormError("");
                       setForm({
-                        ...m,
+                        name: m.name || "",
+                        membership_no: m.membership_no || "",
+                        mobile_no: m.mobile_no || "",
+                        email: m.email || "",
+                        address: m.address || "",
                         is_active: m.is_active === null ? true : !!m.is_active
                       }); 
                       setShowForm(true); 
-                    }} className="p-1 text-blue-600">
+                    }} className="p-1 text-blue-600 hover:bg-blue-50 rounded">
                       <Pencil className="w-4 h-4" />
                     </button>
                   </td>
@@ -563,51 +612,57 @@ function MembersMaster({ setError, setLoading }) {
             
             {formError && (
               <div className="m-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg flex gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" /> {formError}
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> {formError}
               </div>
             )}
 
             <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
               <div>
-                <label className="block text-sm font-medium mb-1">Full Name *</label>
+                <label className="block text-sm font-medium mb-1">Full Name <span className="text-red-500">*</span></label>
                 <input 
-                  type="text" placeholder="Name" value={form.name} 
-                  onChange={e => setForm({...form, name: e.target.value})} 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
+                  type="text" placeholder="Enter full name" value={form.name} 
+                  onChange={e => { setForm({...form, name: e.target.value}); setFieldErrors(p => ({...p, name: ""})); }} 
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${fieldErrors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} 
                 />
+                {fieldErrors.name && <p className="text-xs text-red-600 mt-1">{fieldErrors.name}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Member ID *</label>
+                <label className="block text-sm font-medium mb-1">Member ID <span className="text-red-500">*</span></label>
                 <input 
-                  type="text" placeholder="Member ID" value={form.membership_no} 
-                  onChange={e => setForm({...form, membership_no: e.target.value})} 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
+                  type="text" placeholder="Enter member ID" value={form.membership_no} 
+                  onChange={e => { setForm({...form, membership_no: e.target.value}); setFieldErrors(p => ({...p, membership_no: ""})); }} 
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${fieldErrors.membership_no ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} 
                 />
+                {fieldErrors.membership_no && <p className="text-xs text-red-600 mt-1">{fieldErrors.membership_no}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Mobile No *</label>
+                <label className="block text-sm font-medium mb-1">Mobile No <span className="text-red-500">*</span></label>
                 <input 
-                  type="tel" placeholder="Mobile" value={form.mobile_no} 
-                  onChange={e => setForm({...form, mobile_no: e.target.value})} 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
+                  type="tel" placeholder="10-digit mobile number" value={form.mobile_no} 
+                  maxLength={10}
+                  onChange={e => { setForm({...form, mobile_no: e.target.value}); setFieldErrors(p => ({...p, mobile_no: ""})); }} 
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${fieldErrors.mobile_no ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} 
                 />
+                {fieldErrors.mobile_no && <p className="text-xs text-red-600 mt-1">{fieldErrors.mobile_no}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
+                <label className="block text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>
                 <input 
-                  type="email" placeholder="Email" value={form.email || ""} 
-                  onChange={e => setForm({...form, email: e.target.value})} 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
+                  type="email" placeholder="Enter email address" value={form.email || ""} 
+                  onChange={e => { setForm({...form, email: e.target.value}); setFieldErrors(p => ({...p, email: ""})); }} 
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} 
                 />
+                {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Address</label>
+                <label className="block text-sm font-medium mb-1">Address <span className="text-red-500">*</span></label>
                 <textarea 
-                  placeholder="Address" value={form.address || ""} 
-                  onChange={e => setForm({...form, address: e.target.value})} 
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" 
+                  placeholder="Enter full address" value={form.address || ""} 
+                  onChange={e => { setForm({...form, address: e.target.value}); setFieldErrors(p => ({...p, address: ""})); }} 
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none ${fieldErrors.address ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} 
                   rows="3"
                 />
+                {fieldErrors.address && <p className="text-xs text-red-600 mt-1">{fieldErrors.address}</p>}
               </div>
               <div className="flex items-center gap-2 pt-2">
                 <input 

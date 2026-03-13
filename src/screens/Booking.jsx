@@ -30,7 +30,7 @@ export default function Bookings() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [form, setForm] = useState({
-    room_id: "",
+    room_ids: [], // Changed to array for multi-room support
     guest_name: "",
     total_guest: 1,
     childrens: 0,
@@ -61,9 +61,9 @@ export default function Bookings() {
     return {
       id: b.id,
       guest_name: b.guest_name,
-      room_id: room?.id || null,
-      room_no: room?.room_no || "-",
-      room_type: room?.type || "-",
+      room_ids: Array.isArray(b.rooms) ? b.rooms.map(r => r.id) : [],
+      room_no: Array.isArray(b.rooms) ? b.rooms.map(r => r.room_no).join(", ") : "-",
+      room_type: Array.isArray(b.rooms) ? [...new Set(b.rooms.map(r => r.type))].join(", ") : "-",
       check_in: b.check_in?.slice(0, 10),
       check_out: b.check_out?.slice(0, 10),
       status: b.status,
@@ -97,7 +97,8 @@ export default function Bookings() {
           : []
       );
 
-      const roomsData = Array.isArray(roomRes.data) ? roomRes.data : [];
+      const roomsData = Array.isArray(roomRes.data) ? roomRes.data : (roomRes.data?.data || []);
+      console.log("🏨 PROCESSED ROOMS DATA 👉", roomsData);
       setRooms(roomsData);
 
       // Initially show all rooms
@@ -116,10 +117,15 @@ export default function Bookings() {
     if (form.check_in && form.check_out) {
       checkAvailability();
     }
-  }, [form.check_in, form.check_out, bookings]);
+  }, [form.check_in, form.check_out, bookings, editing]);
 
   const checkAvailability = () => {
+    console.log("🔍 CHECKING AVAILABILITY...");
+    console.log("📅 Form Dates:", form.check_in, "to", form.check_out);
+    console.log("🏨 Total Rooms:", rooms.length);
+
     if (!form.check_in || !form.check_out || form.check_out <= form.check_in) {
+      console.log("⚠️ Dates invalid or missing, showing all rooms");
       setAvailableRooms(rooms);
       return;
     }
@@ -127,8 +133,8 @@ export default function Bookings() {
     // Find conflicting bookings
     const conflictingBookingIds = bookings
       .filter(booking => {
-        // Skip if room_id is not available or booking is checked-out/cancelled
-        if (!booking.room_id || booking.status === "Checked-out" || booking.status === "Cancelled") {
+        // Skip if booking is checked-out/cancelled
+        if (booking.status === "Checked-out" || booking.status === "Cancelled") {
           return false;
         }
 
@@ -138,24 +144,49 @@ export default function Bookings() {
         const selectedCheckOut = new Date(form.check_out);
 
         // Check for date overlap
-        return (
+        const isOverlap = (
           (selectedCheckIn >= bookingCheckIn && selectedCheckIn < bookingCheckOut) ||
           (selectedCheckOut > bookingCheckIn && selectedCheckOut <= bookingCheckOut) ||
           (selectedCheckIn <= bookingCheckIn && selectedCheckOut >= bookingCheckOut)
         );
-      })
-      .map(booking => booking.room_id);
 
-    // Filter available rooms
-    const available = rooms.filter(room =>
-      !conflictingBookingIds.includes(room.id)
-    );
+        // Skip if it's the same booking we are editing
+        if (editing && Number(booking.id) === Number(editing.id)) {
+          return false;
+        }
+
+        return isOverlap;
+      })
+      .flatMap(booking => booking.room_ids || []); // Handle multiple rooms per booking
+
+    console.log("🚫 Conflicting Room IDs:", conflictingBookingIds);
+
+    // Filter available rooms and restrict types to Single Suite and Double Suite
+    // BUT! Allow the currently selected room even if it has an old type, to prevent it from disappearing
+    const available = rooms.filter(room => {
+      const isNotConflict = !conflictingBookingIds.includes(room.id);
+      const isCorrectType = room.type === "Single Suite" || room.type === "Double Suite";
+      
+      // If we are editing, always keep the rooms that were already booked for this booking
+      const isCurrentBookingRoom = editing && editing.room_ids?.includes(room.id);
+
+      if (isCurrentBookingRoom) {
+        return true;
+      }
+
+      return isNotConflict && isCorrectType;
+    });
 
     setAvailableRooms(available);
 
-    // If currently selected room is not available, reset it
-    if (form.room_id && !available.find(r => r.id == form.room_id)) {
-      setForm(prev => ({ ...prev, room_id: "" }));
+    // Filter out selected rooms that are no longer available
+    const stillAvailable = form.room_ids.filter(id => 
+      available.some(r => Number(r.id) === Number(id))
+    );
+    
+    if (stillAvailable.length !== form.room_ids.length) {
+      console.log("❌ Some selected rooms are no longer available, updating form");
+      setForm(prev => ({ ...prev, room_ids: stillAvailable }));
     }
   };
 
@@ -163,7 +194,7 @@ export default function Bookings() {
   const resetForm = () => {
     console.log("♻️ RESET FORM");
     setForm({
-      room_id: "",
+      room_ids: [],
       guest_name: "",
       total_guest: 1,
       childrens: 0,
@@ -176,11 +207,12 @@ export default function Bookings() {
   };
 
   const submitForm = async () => {
-    console.log("📝 CURRENT FORM STATE 👉", form);
+    console.log("📝 SUBMITTING FORM...");
+    console.log("📦 Selected Room IDs:", form.room_ids);
 
     // Validation
-    if (!form.room_id || !form.guest_name || !form.check_in || !form.check_out) {
-      setErrorMessage("All fields are required");
+    if (form.room_ids.length === 0 || !form.guest_name || !form.check_in || !form.check_out) {
+      setErrorMessage("All fields are required, including at least one room");
       return;
     }
 
@@ -189,23 +221,17 @@ export default function Bookings() {
       return;
     }
 
-    // Check guest limit
-    const selectedRoom = rooms.find(r => r.id == form.room_id);
-    if (selectedRoom && form.total_guest > selectedRoom.guest_limit) {
-      setErrorMessage(`Guest limit exceeded. Maximum allowed: ${selectedRoom.guest_limit}`);
+    // Check guest limit (Sum limits for multiple rooms)
+    const selectedRoomsData = rooms.filter(r => form.room_ids.includes(Number(r.id)));
+    const totalLimit = selectedRoomsData.reduce((sum, r) => sum + (r.guest_limit || 0), 0);
+    
+    if (form.total_guest > totalLimit) {
+      setErrorMessage(`Guest limit exceeded. Total capacity for selected rooms: ${totalLimit}`);
       return;
     }
 
-    // Check if room is still available
-    const isRoomAvailable = availableRooms.some(r => r.id == form.room_id);
-    if (!isRoomAvailable) {
-      setErrorMessage("Selected room is no longer available. Please choose another room.");
-      return;
-    }
-
-    // 🔥 EXACT POSTMAN PAYLOAD
+    // 🔥 EXACT PAYLOAD AS PER API IMAGE
     const payload = {
-      room_id: Number(form.room_id),
       guest_name: form.guest_name,
       total_guest: Number(form.total_guest),
       childrens: Number(form.childrens),
@@ -213,15 +239,20 @@ export default function Bookings() {
       check_out: form.check_out,
     };
 
-    console.log("🚀 FINAL PAYLOAD (POSTMAN MATCH) 👉", payload);
+    // If one room, use room_id, if multiple use rooms array
+    if (form.room_ids.length === 1) {
+      payload.room_id = Number(form.room_ids[0]);
+    } else {
+      payload.rooms = form.room_ids.map(id => Number(id));
+    }
+
+    console.log("🚀 FINAL PAYLOAD 👉", payload);
 
     try {
       setErrorMessage("");
       if (editing) {
-        console.log("✏️ UPDATE BOOKING 👉", editing.id);
         await updateBooking(editing.id, payload);
       } else {
-        console.log("➕ CREATE BOOKING");
         await createBooking(payload);
       }
 
@@ -439,7 +470,16 @@ export default function Bookings() {
               </div>
             </div>
 
-          
+            <button
+              onClick={() => {
+                resetForm();
+                setShowForm(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors w-full md:w-auto justify-center font-bold"
+            >
+              <Plus className="w-4 h-4" />
+              Add Booking
+            </button>
           </div>
         </div>
 
@@ -561,7 +601,7 @@ export default function Bookings() {
                               console.log("✏️ EDIT BOOKING 👉", b);
                               setEditing(b);
                               setForm({
-                                room_id: b.room_id,
+                                room_ids: b.room_ids,
                                 guest_name: b.guest_name,
                                 total_guest: b.total_guest || 1,
                                 childrens: b.childrens || 0,
@@ -759,36 +799,39 @@ export default function Bookings() {
                 </div>
 
                 {/* Room Selection */}
+                {/* Room Selection (Multi) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Home className="w-4 h-4 inline mr-2" />
-                    Select Room
+                    Select Available Rooms (Multiple allowed)
                   </label>
-                  <select
-                    value={form.room_id}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        room_id: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  >
-                    <option value="">Select Room</option>
+                  <div className="border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto space-y-2">
                     {availableRooms.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.room_no} ({r.type}) - Max {r.guest_limit} guests
-                        {r.price_3day && ` - ₹${r.price_3day}/night`}
-                      </option>
+                      <label key={r.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={form.room_ids.includes(Number(r.id))}
+                          onChange={(e) => {
+                            const id = Number(r.id);
+                            if (e.target.checked) {
+                              setForm({ ...form, room_ids: [...form.room_ids, id] });
+                            } else {
+                              setForm({ ...form, room_ids: form.room_ids.filter(rid => rid !== id) });
+                            }
+                          }}
+                          className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          ROOM {r.room_no} — {r.type}
+                        </span>
+                      </label>
                     ))}
-                  </select>
-                  {availableRooms.length === 0 && form.check_in && form.check_out && (
-                    <p className="mt-2 text-sm text-red-600">
-                      No rooms available for selected dates
-                    </p>
-                  )}
-                  <p className="mt-1 text-xs text-gray-500">
-                    {availableRooms.length} rooms available for selected dates
+                    {availableRooms.length === 0 && (
+                      <p className="text-sm text-red-500 text-center py-2">No rooms available for these dates</p>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    {form.room_ids.length} room(s) selected
                   </p>
                 </div>
 

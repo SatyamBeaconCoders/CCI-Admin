@@ -122,8 +122,9 @@ export default function Staff() {
     email: "",
     phone: ""
   });
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  const roles = ["Admin", "Manager", "Reception", "Housekeeping", "Maintenance"];
+  const roles = ["Admin", "Reception"];
 
   useEffect(() => {
     fetchStaff();
@@ -142,24 +143,42 @@ export default function Staff() {
       setLoading(false);
     }
   };
+  const validateForm = () => {
+    const errors = {};
+    if (!form.name?.trim()) errors.name = "Full Name is required.";
+    if (!form.username?.trim()) errors.username = "Username is required.";
+    if (!editingStaff && !form.password?.trim()) {
+      errors.password = "Password is required.";
+    } else if (!editingStaff && form.password.trim().length < 6) {
+      errors.password = "Password must be at least 6 characters.";
+    }
+    if (!form.phone?.trim()) {
+      errors.phone = "Phone number is required.";
+    } else if (!/^[0-9]{10}$/.test(form.phone.trim())) {
+      errors.phone = "Phone number must be exactly 10 digits.";
+    }
+    if (form.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      errors.email = "Please enter a valid email address.";
+    }
+    return errors;
+  };
+
   const handleSubmit = async () => {
-    if (!form.name || !form.username || (!editingStaff && !form.password)) {
-      setFormError("Name, username, and password are required");
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setFormError("Please fill in all required fields correctly.");
       return;
     }
+    setFieldErrors({});
 
     try {
       setFormError("");
       setLoading(true);
       
       const payload = { ...form };
-      if (!editingStaff) {
-        payload.password = form.password;
-      } else {
-        delete payload.password;
-      }
-
       if (editingStaff) {
+        delete payload.password;
         await userService.updateUser(editingStaff.id, payload);
       } else {
         await userService.createUser(payload);
@@ -170,7 +189,16 @@ export default function Staff() {
       setShowForm(false);
     } catch (err) {
       console.error("❌ STAFF SAVE ERROR:", err.response?.data || err);
-      setFormError(err.response?.data?.message || err.message || "Failed to save staff. Please try again.");
+      if (err.response?.data?.errors) {
+        const serverErrors = {};
+        Object.entries(err.response.data.errors).forEach(([key, val]) => {
+          serverErrors[key] = Array.isArray(val) ? val[0] : val;
+        });
+        setFieldErrors(serverErrors);
+        setFormError("Please correct the highlighted fields.");
+      } else {
+        setFormError(err.response?.data?.message || err.message || "Failed to save staff. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -203,10 +231,13 @@ export default function Staff() {
     });
     setEditingStaff(null);
     setFormError("");
+    setFieldErrors({});
   };
 
   const openEdit = (staffMember) => {
     setEditingStaff(staffMember);
+    setFieldErrors({});
+    setFormError("");
     setForm({
       name: staffMember.name || "",
       username: staffMember.username || "",
@@ -505,56 +536,63 @@ export default function Staff() {
                 </div>
               )}
 
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     placeholder="Enter staff name"
+                    autoComplete="off"
                     value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => { setForm({ ...form, name: e.target.value }); setFieldErrors(p => ({...p, name: ""})); }}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                   />
+                  {fieldErrors.name && <p className="text-xs text-red-600 mt-1">{fieldErrors.name}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Username *
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Username <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter username for login"
+                    placeholder="Login username"
+                    autoComplete="off"
+                    name={`user_${Math.random().toString(36).substr(2, 9)}`}
                     value={form.username}
-                    onChange={(e) => setForm({ ...form, username: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => { setForm({ ...form, username: e.target.value }); setFieldErrors(p => ({...p, username: ""})); }}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.username ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                   />
+                  {fieldErrors.username && <p className="text-xs text-red-600 mt-1">{fieldErrors.username}</p>}
                 </div>
 
                 {!editingStaff && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Password *
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Password <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="password"
-                      placeholder="Enter password"
+                      placeholder="Minimum 6 characters"
+                      autoComplete="new-password"
                       value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(e) => { setForm({ ...form, password: e.target.value }); setFieldErrors(p => ({...p, password: ""})); }}
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                     />
+                    {fieldErrors.password && <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Role *
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Role <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={form.role}
                     onChange={(e) => setForm({ ...form, role: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {roles.map((role) => (
                       <option key={role} value={role}>{role}</option>
@@ -563,38 +601,42 @@ export default function Staff() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="10-digit mobile number"
+                    maxLength={10}
+                    value={form.phone}
+                    onChange={(e) => { setForm({ ...form, phone: e.target.value }); setFieldErrors(p => ({...p, phone: ""})); }}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                  />
+                  {fieldErrors.phone && <p className="text-xs text-red-600 mt-1">{fieldErrors.phone}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address <span className="text-gray-400 text-xs">(Optional)</span>
                   </label>
                   <input
                     type="email"
                     placeholder="staff@example.com"
+                    autoComplete="off"
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => { setForm({ ...form, email: e.target.value }); setFieldErrors(p => ({...p, email: ""})); }}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                   />
+                  {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="9876543210"
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={form.is_active}
                       onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                      className="rounded text-blue-500 focus:ring-blue-500"
+                      className="rounded text-blue-500 focus:ring-blue-500 w-4 h-4"
                     />
                     <span className="text-sm text-gray-700">Active Account</span>
                   </label>
