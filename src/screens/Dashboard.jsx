@@ -83,8 +83,8 @@ export default function Dashboard() {
     
     if (view === "week") {
       return isWithinInterval(date, {
-        start: startOfWeek(today),
-        end: endOfWeek(today),
+        start: startOfWeek(today, { weekStartsOn: 1 }),
+        end: endOfWeek(today, { weekStartsOn: 1 }),
       });
     }
     
@@ -98,15 +98,61 @@ export default function Dashboard() {
   }, [view, today]);
 
   const dashboardData = useMemo(() => {
-    // 1. Filter for raw events within range
-    const rawEvents = bookings.filter(b => {
+    // 1. Source Data for Operational Table (Arrivals or Departures in range)
+    const tableSourceBookings = bookings.filter(b => {
       if (b.status === STATUS.CANCELLED) return false;
       const ci = b.check_in ? parseISO(b.check_in) : null;
       const co = b.check_out ? parseISO(b.check_out) : null;
-      return isInRange(ci) || isInRange(co);
+      return (ci && isInRange(ci)) || (co && isInRange(co));
     });
 
-    // 2. Separate counts (Always Today for Top Cards to keep operational focus)
+    // 2. Source Data for Revenue (Strictly ONLY check-in in range)
+    const revenueSourceBookings = bookings.filter(b => {
+      if (b.status === STATUS.CANCELLED) return false;
+      const ci = b.check_in ? parseISO(b.check_in) : null;
+      return ci && isInRange(ci);
+    });
+
+    // 3. Financial Metrics (Final Production Architecture)
+    const num = (val) => Number(val || 0);
+
+    const totalRevenue = revenueSourceBookings.reduce((sum, b) => {
+      return sum + num(b.total_amt || b.total_amount);
+    }, 0);
+
+    const totalCollected = revenueSourceBookings.reduce((sum, b) => {
+      const total = num(b.total_amt || b.total_amount);
+      const paid = num(b.total_paid || b.paid_amount);
+      // Clamping paid to total ensures overpayments don't cause negative pending
+      return sum + Math.min(paid, total);
+    }, 0);
+
+    const totalPending = Math.max(totalRevenue - totalCollected, 0);
+
+    // Debug logging as requested via verdict
+    console.log("💰 Revenue Integrity Check:", {
+      view,
+      count: revenueSourceBookings.length,
+      totalRevenue,
+      totalCollected,
+      totalPending
+    });
+
+    // 4. Operational Events (Individual check-ins/check-outs)
+    const tableEvents = [];
+    tableSourceBookings.forEach(b => {
+      const ci = b.check_in ? parseISO(b.check_in) : null;
+      const co = b.check_out ? parseISO(b.check_out) : null;
+      
+      if (ci && isInRange(ci)) {
+        tableEvents.push({ ...b, opType: "check-in", sortDate: ci });
+      }
+      if (co && isInRange(co) && b.status !== STATUS.PENDING) {
+        tableEvents.push({ ...b, opType: "check-out", sortDate: co });
+      }
+    });
+
+    // 5. Counts (Always Today for Header Cards)
     const checkInsCount = bookings.filter(b => {
       const date = b.check_in ? parseISO(b.check_in) : null;
       return date && isSameDay(date, today) && b.status !== STATUS.CANCELLED;
@@ -117,39 +163,15 @@ export default function Dashboard() {
       return date && isSameDay(date, today) && b.status !== STATUS.CANCELLED;
     }).length;
 
-    // 3. Process events for table (Merging same-day cases)
-    const processedEventsMap = new Map();
-
-    rawEvents.forEach(b => {
-      const ci = b.check_in ? parseISO(b.check_in) : null;
-      const co = b.check_out ? parseISO(b.check_out) : null;
-      const isCiInRange = isInRange(ci);
-      const isCoInRange = isInRange(co);
-
-      if (isCiInRange && isCoInRange && ci && co && isSameDay(ci, co)) {
-        processedEventsMap.set(b.id, { ...b, opType: 'both', sortDate: ci });
-      } else if (isCiInRange) {
-        processedEventsMap.set(`${b.id}-ci`, { ...b, opType: 'check-in', sortDate: ci });
-      } else if (isCoInRange) {
-        processedEventsMap.set(`${b.id}-co`, { ...b, opType: 'check-out', sortDate: co });
-      }
-    });
-
-    const combinedList = Array.from(processedEventsMap.values()).sort((a, b) => {
-      const diff = new Date(a.sortDate) - new Date(b.sortDate);
-      if (diff !== 0) return diff;
-      if (a.opType === 'check-in' && b.opType !== 'check-in') return -1;
-      if (b.opType === 'check-in' && a.opType !== 'check-in') return 1;
-      return 0;
-    });
-
     const occupiedCount = rooms.filter(r => r.status?.toLowerCase() === 'occupied' || r.status?.toLowerCase() === 'booked').length;
     const availableCount = rooms.length - occupiedCount;
 
-    // Financial Metrics (based on events in active range)
-    const totalRevenue = combinedList.reduce((sum, b) => sum + (Number(b.total_amount || b.total_amt || 0)), 0);
-    const totalCollected = combinedList.reduce((sum, b) => sum + (Number(b.paid_amount || b.advance_paid || b.total_paid || 0)), 0);
-    const totalPending = totalRevenue - totalCollected;
+    // 6. Sorting & Filtering Table
+    const combinedList = tableEvents.sort((a, b) => {
+      const diff = new Date(a.sortDate) - new Date(b.sortDate);
+      if (diff !== 0) return diff;
+      return a.opType === 'check-in' ? -1 : 1;
+    });
 
     const filteredList = combinedList.filter(b => {
       const term = debouncedSearch.toLowerCase();
@@ -160,11 +182,8 @@ export default function Dashboard() {
       );
     }).slice(0, 10);
 
-    // Placeholder Fill (min 5 rows)
+    // Placeholder Fill (min 6 rows)
     const tableRows = [...filteredList];
-    while (tableRows.length > 0 && tableRows.length < 5 && !debouncedSearch) {
-      tableRows.push({ isEmpty: true, id: `empty-${tableRows.length}` });
-    }
 
     return {
       checkInsCount,
@@ -236,10 +255,14 @@ export default function Dashboard() {
   if (error) return <ErrorState message={error} onRetry={fetchData} />;
 
   return (
-    <div className="space-y-4">
-      
-      {/* 1. TOP STATS ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <>
+      <style>{`
+        html, body { scrollbar-gutter: stable !important; }
+      `}</style>
+
+      <div className="space-y-4">
+        {/* 1. TOP STATS ROW */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Check-ins Today" value={dashboardData.checkInsCount} icon={<Users className="w-5 h-5"/>} color="blue" />
         <StatCard title="Check-outs Today" value={dashboardData.checkOutsCount} icon={<LogOut className="w-5 h-5"/>} color="orange" />
         <StatCard title="Available Rooms" value={dashboardData.availableCount} icon={<Home className="w-5 h-5"/>} color="green" />
@@ -252,21 +275,23 @@ export default function Dashboard() {
         {/* LEFT: OPERATIONS HUB */}
         <div className="col-span-12 lg:col-span-8 space-y-4">
           
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex justify-between items-center">
+          <div className="bg-white/90 backdrop-blur-sm border border-gray-100 shadow-sm rounded-2xl p-4 flex justify-between items-center">
             <div className="flex items-center gap-3">
                <div className="w-8 h-8 bg-white border border-gray-100 rounded-lg flex items-center justify-center">
                   <BarChart3 className="w-4 h-4 text-blue-600" />
                </div>
-               <p className="text-sm text-gray-700 font-semibold tracking-tight">
-                {dashboardData.totalCount} operations scheduled for {view === 'today' ? 'today' : view}
-               </p>
+               <div className="flex-1">
+                 <p className="text-sm text-gray-700 font-semibold tracking-tight">
+                  <span className="tabular-nums">{dashboardData.totalCount}</span> operations scheduled for <span className="capitalize">{view}</span>
+                 </p>
+               </div>
             </div>
             <button onClick={() => navigate(`/bookings?view=${view}`)} className="text-[11px] text-blue-600 font-bold uppercase tracking-wider hover:underline">
               View All
             </button>
           </div>
 
-          <div className="bg-gradient-to-br from-white to-gray-50/20 rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 h-[600px] flex flex-col overflow-hidden">
             <div className="p-5 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4">
                 <div>
@@ -277,12 +302,12 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                <div className="flex bg-gray-100 p-1 rounded-xl">
+                <div className="flex bg-gray-100 p-1 rounded-xl w-fit shrink-0">
                   {["today", "week", "month"].map(v => (
                     <button
                       key={v}
                       onClick={() => setView(v)}
-                      className={`px-3 py-1 text-[10px] uppercase tracking-wider rounded-lg font-bold transition-all ${
+                      className={`w-20 py-1 text-[10px] uppercase tracking-wider rounded-lg font-bold transition-all ${
                         view === v
                           ? "bg-blue-600 text-white shadow-sm"
                           : "text-gray-500 hover:text-gray-900"
@@ -306,34 +331,26 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="overflow-x-auto max-h-[440px] border-t border-gray-100 transition-all duration-150 ease-out">
+            <div className="overflow-x-auto overflow-y-auto flex-1 border-t border-gray-100 transition-all duration-150 ease-out pb-8 flex flex-col" style={{ scrollbarGutter: 'stable' }}>
               {dashboardData.filteredList.length > 0 ? (
                 <table className="w-full text-left">
                   <thead className="bg-gray-50 text-[10px] font-medium text-gray-500 uppercase tracking-widest border-b border-gray-100">
                     <tr>
-                      <th className="px-6 py-3.5">Guest & Details</th>
+                      <th className="pl-8 pr-6 py-3.5">Guest & Details</th>
                       <th className="px-6 py-3.5">Room</th>
-                      <th className="px-6 py-3.5 hidden sm:table-cell">Arrival / Departure</th>
+                      <th className="px-6 py-3.5 block sm:table-cell">Arrival / Departure</th>
                       <th className="px-6 py-3.5 hidden md:table-cell">Status</th>
                       <th className="px-6 py-3.5 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {dashboardData.filteredList.map((booking, index) => booking.isEmpty ? (
-                      <tr key={booking.id} className="opacity-10">
-                        <td className="px-6 py-4">—</td>
-                        <td className="px-6 py-4">—</td>
-                        <td className="px-6 py-4 hidden sm:table-cell">—</td>
-                        <td className="px-6 py-4 hidden md:table-cell">—</td>
-                        <td className="px-6 py-4 text-right">—</td>
-                      </tr>
-                    ) : (
+                    {dashboardData.filteredList.map((booking, index) => (
                       <tr 
                         key={`${booking.id}-${booking.opType}`} 
                         onClick={() => navigate(`/bookings/${booking.id}`)}
                         className="hover:bg-gray-50 transition-all cursor-pointer group border-l-4 border-transparent hover:border-blue-600 relative"
                       >
-                        <td className="px-6 py-4">
+                        <td className="pl-8 pr-6 py-4">
                           <div className="flex items-center gap-2 mb-1">
                              <p className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors text-sm tracking-tight">{booking.guest_name}</p>
                              <div className="flex gap-1">
@@ -361,14 +378,14 @@ export default function Dashboard() {
                                 {getNights(booking.check_in, booking.check_out)} Nights • ₹{booking.total_amount || booking.total_amt || "0"}
                              </p>
                           </div>
-                          {/* Payment Line */}
+                          {/* Payment Line - Final stabilized Logic */}
                           <div className="flex items-center gap-2 mt-0.5">
-                             <p className={`text-[10px] font-bold ${((Number(booking.total_amount || booking.total_amt || 0) - Number(booking.paid_amount || booking.advance_paid || 0)) > 0) ? 'text-red-500' : 'text-green-600'}`}>
-                                {(Number(booking.total_amount || booking.total_amt || 0) - Number(booking.paid_amount || booking.advance_paid || 0)) > 0 
-                                  ? `Due ₹${Number(booking.total_amount || booking.total_amt || 0) - Number(booking.paid_amount || booking.advance_paid || 0)}`
-                                  : `Paid ₹${booking.total_amount || booking.total_amt || "0"}`}
+                             <p className={`text-[10px] font-bold ${((Number(booking.total_amt ?? booking.total_amount ?? 0) - Math.min(Number(booking.total_paid ?? 0), Number(booking.total_amt ?? booking.total_amount ?? 0))) > 0) ? 'text-red-500' : 'text-green-600'}`}>
+                                {(Number(booking.total_amt ?? booking.total_amount ?? 0) - Math.min(Number(booking.total_paid ?? 0), Number(booking.total_amt ?? booking.total_amount ?? 0))) > 0 
+                                  ? `Due ₹${Number(booking.total_amt ?? booking.total_amount ?? 0) - Math.min(Number(booking.total_paid ?? 0), Number(booking.total_amt ?? booking.total_amount ?? 0))}`
+                                  : `Paid ₹${booking.total_amt ?? booking.total_amount ?? "0"}`}
                              </p>
-                             {(Number(booking.total_amount || booking.total_amt || 0) - Number(booking.paid_amount || booking.advance_paid || 0)) > 5000 && (
+                             {(Number(booking.total_amt ?? booking.total_amount ?? 0) - Math.min(Number(booking.total_paid ?? 0), Number(booking.total_amt ?? booking.total_amount ?? 0))) > 5000 && (
                                <span className="text-[9px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded border border-red-100 font-bold uppercase tracking-tight">
                                   HIGH PENDING
                                </span>
@@ -385,7 +402,7 @@ export default function Dashboard() {
                              {booking.rooms?.[0]?.room_no || "—"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 hidden sm:table-cell">
+                        <td className="px-6 py-4 block sm:table-cell">
                           <div className="text-[10px] font-medium space-y-1">
                             <div className="flex items-center gap-2 text-gray-700">
                                 <ArrowRight className={`w-2.5 h-2.5 ${(booking.opType === 'check-in' || booking.opType === 'both') ? 'text-blue-500 font-bold' : 'text-gray-300'}`} />
@@ -442,48 +459,50 @@ export default function Dashboard() {
         </div>
 
         {/* RIGHT: QUICK PANEL */}
-        <div className="col-span-12 lg:col-span-4 space-y-4">
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-4 h-full">
           
-          {/* A. TODAY SUMMARY */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-3">{view} Summary</h3>
+          {/* A. SUMMARY CARD - STABILIZED */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 p-5 shadow-sm min-w-[280px]">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate w-32">{view} Summary</h3>
+              <p className="text-[10px] text-gray-400 italic font-medium">Daily Actions</p>
+            </div>
             <div className="space-y-4">
-                <div className="flex items-baseline justify-between">
-                    <p className="text-4xl font-bold text-gray-900 tracking-tighter">
+                <div className="flex items-baseline justify-between transition-all">
+                    <p className="text-4xl font-bold text-gray-900 tracking-tighter tabular-nums">
                         {dashboardData.totalCount}
                     </p>
-                    <p className="text-[11px] text-gray-400 font-medium">Daily Actions</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-50">
                     <div>
-                        <p className="text-lg font-bold text-blue-600">{dashboardData.checkInsCount}</p>
+                        <p className="text-lg font-bold text-blue-600 tabular-nums">{dashboardData.checkInsCount}</p>
                         <p className="text-[10px] text-gray-500 font-medium uppercase tracking-tight">Check-ins</p>
                     </div>
                     <div>
-                        <p className="text-lg font-bold text-orange-600">{dashboardData.checkOutsCount}</p>
+                        <p className="text-lg font-bold text-orange-600 tabular-nums">{dashboardData.checkOutsCount}</p>
                         <p className="text-[10px] text-gray-500 font-medium uppercase tracking-tight">Check-outs</p>
                     </div>
                 </div>
 
                 {/* Financial Insights - Zero Redesign */}
                 <div className="pt-4 border-t border-gray-50 space-y-3">
-                    <div className="flex justify-between items-center">
-                        <p className="text-[11px] text-gray-400 font-medium uppercase tracking-tight">Total Revenue</p>
-                        <p className="text-base font-bold text-gray-900">₹{dashboardData.totalRevenue.toLocaleString()}</p>
+                    <div className="flex justify-between items-center h-5">
+                        <p className="text-[11px] text-gray-400 font-medium uppercase tracking-tight">Room Revenue</p>
+                        <p className="text-base font-bold text-gray-900 tabular-nums">₹{dashboardData.totalRevenue.toLocaleString()}</p>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center h-5">
                         <p className="text-[11px] text-gray-400 font-medium uppercase tracking-tight">Collected</p>
-                        <p className="text-base font-bold text-green-600">₹{dashboardData.totalCollected.toLocaleString()}</p>
+                        <p className="text-base font-bold text-green-600 tabular-nums">₹{dashboardData.totalCollected.toLocaleString()}</p>
                     </div>
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center h-5">
                         <p className="text-[11px] text-gray-400 font-medium uppercase tracking-tight">Pending</p>
-                        <p className="text-base font-bold text-red-600">₹{dashboardData.totalPending.toLocaleString()}</p>
+                        <p className="text-base font-bold text-red-600 tabular-nums">₹{dashboardData.totalPending.toLocaleString()}</p>
                     </div>
                 </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-5">
             <h3 className="text-sm font-semibold text-gray-900 mb-4 tracking-tight">Quick Actions</h3>
             <div className="flex gap-3">
               <ActionButton 
@@ -501,24 +520,26 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-5 flex-1 flex flex-col">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-gray-900 tracking-tight">Room Availability</h3>
                 <Bed className="w-4 h-4 text-gray-400" />
             </div>
-            <div className="space-y-2">
-              <RoomStatusRow label="Available Now" count={dashboardData.availableCount} color="green" />
-              <RoomStatusRow label="Occupied" count={dashboardData.occupiedCount} color="purple" />
+            <div className="space-y-2 flex-1 flex flex-col justify-between">
+              <div>
+                <RoomStatusRow label="Available Now" count={dashboardData.availableCount} color="green" />
+                <RoomStatusRow label="Occupied" count={dashboardData.occupiedCount} color="purple" />
+              </div>
               <div className="pt-2 border-t border-gray-50 mt-2">
                 <RoomStatusRow label="Total Units" count={rooms.length} color="gray" />
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
-  );
+  </>
+);
 }
 
 /* ================= SUB-COMPONENTS ================= */
@@ -532,10 +553,10 @@ function StatCard({ title, value, icon, color }) {
   };
   
   return (
-    <div className="bg-white p-5 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all flex items-center justify-between group">
+    <div className="bg-white/90 backdrop-blur-sm p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-blue-200 transition-all flex items-center justify-between group">
       <div className="space-y-0.5">
         <p className="text-[10px] font-medium text-gray-500 uppercase tracking-widest">{title}</p>
-        <p className="text-3xl font-bold text-gray-900 tracking-tighter">{value}</p>
+        <p className="text-3xl font-bold text-gray-900 tracking-tighter tabular-nums">{value}</p>
       </div>
       <div className={`p-2.5 rounded-xl border ${colors[color]} group-hover:scale-110 transition-transform`}>
         {icon}
@@ -586,13 +607,29 @@ function RoomStatusRow({ label, count, color }) {
 }
 
 function EmptyState({ searchTerm }) {
+  const navigate = useNavigate();
   return (
-    <div className="py-16 text-center border-t border-gray-100">
-      <div className="bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-        <Clock className="w-6 h-6 text-gray-300" />
+    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-white/50 border-t border-gray-50">
+      <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 transition-transform hover:scale-110">
+        <Calendar className="w-8 h-8 text-blue-600" />
       </div>
-      <h3 className="text-gray-900 font-semibold text-sm uppercase tracking-tight">{searchTerm ? "No results found" : "All Quiet Today"}</h3>
-      <p className="text-gray-400 text-[10px] font-medium mt-1">Check filters or adjust your search term.</p>
+      <h3 className="text-lg font-bold text-gray-900 tracking-tight">
+        {searchTerm ? "No matching operations found" : "No operations scheduled for today"}
+      </h3>
+      <p className="text-gray-500 text-sm mt-1 max-w-[280px] font-medium leading-relaxed">
+        {searchTerm 
+          ? "We couldn't find any results for your search. Try adjusting your filters." 
+          : "New bookings will appear here once created."
+        }
+      </p>
+      {!searchTerm && (
+        <button 
+          onClick={() => navigate('/bookings')}
+          className="mt-6 px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 flex items-center gap-2 transition-all hover:-translate-y-0.5"
+        >
+          <Plus className="w-4 h-4" /> New Booking
+        </button>
+      )}
     </div>
   );
 }
@@ -612,15 +649,88 @@ function ErrorState({ message, onRetry }) {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-4 animate-pulse">
-      <div className="grid grid-cols-4 gap-4">
+    <div className="space-y-6">
+      {/* 1. Stat Cards Skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-24 bg-gray-100 rounded-2xl" />
+          <div key={i} className="bg-white/90 p-5 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center h-[108px]">
+            <div className="space-y-3">
+              <div className="h-2 w-16 bg-gray-100 rounded animate-shimmer" />
+              <div className="h-8 w-12 bg-gray-100 rounded animate-shimmer" />
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-gray-100 animate-shimmer" />
+          </div>
         ))}
       </div>
+
       <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-8 h-[500px] bg-gray-50 rounded-2xl" />
-        <div className="col-span-4 h-[500px] bg-gray-50 rounded-2xl" />
+        {/* 2. Operational Hub Skeleton */}
+        <div className="col-span-12 lg:col-span-8 space-y-4">
+          <div className="h-[72px] bg-white/90 rounded-2xl border border-gray-100 shadow-sm animate-shimmer opacity-50" />
+          
+          <div className="bg-white/90 rounded-2xl border border-gray-100 shadow-sm h-[600px] flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-gray-50 flex justify-between items-center">
+              <div className="space-y-2">
+                <div className="h-5 w-32 bg-gray-100 rounded animate-shimmer" />
+                <div className="h-2 w-20 bg-gray-100 rounded animate-shimmer" />
+              </div>
+              <div className="h-10 w-48 bg-gray-50 rounded-xl animate-shimmer" />
+            </div>
+            <div className="flex-1 p-0">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="border-b border-gray-50 p-6 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="space-y-2">
+                      <div className="h-4 w-32 bg-gray-100 rounded animate-shimmer" />
+                      <div className="h-2 w-24 bg-gray-50 rounded animate-shimmer" />
+                    </div>
+                  </div>
+                  <div className="h-8 w-16 bg-gray-50 rounded-lg animate-shimmer" />
+                  <div className="h-8 w-24 bg-gray-50 rounded-lg animate-shimmer" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Right Sidebar Skeleton */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-4 h-full">
+          <div className="bg-white/90 rounded-2xl border border-gray-100 shadow-sm p-5 h-[220px] space-y-6">
+             <div className="flex justify-between items-center">
+                <div className="h-4 w-24 bg-gray-100 rounded animate-shimmer" />
+                <div className="h-2 w-16 bg-gray-50 rounded animate-shimmer" />
+             </div>
+             <div className="h-12 w-full bg-gray-50 rounded-xl animate-shimmer" />
+             <div className="space-y-3">
+                {[...Array(3)].map((_, j) => (
+                  <div key={j} className="flex justify-between">
+                    <div className="h-2 w-20 bg-gray-50 rounded animate-shimmer" />
+                    <div className="h-2 w-12 bg-gray-100 rounded animate-shimmer" />
+                  </div>
+                ))}
+             </div>
+          </div>
+          <div className="bg-white/90 rounded-2xl border border-gray-100 shadow-sm p-5 h-[120px] flex gap-3">
+             <div className="flex-1 bg-gray-50/50 rounded-xl animate-shimmer" />
+             <div className="flex-1 bg-gray-50/50 rounded-xl animate-shimmer" />
+          </div>
+          <div className="bg-white/90 rounded-2xl border border-gray-100 shadow-sm p-5 flex-1 flex flex-col space-y-4">
+             <div className="flex justify-between items-center mb-2">
+                <div className="h-4 w-32 bg-gray-100 rounded animate-shimmer" />
+                <div className="h-4 w-4 bg-gray-50 rounded animate-shimmer" />
+             </div>
+             <div className="flex-1 flex flex-col justify-between">
+                <div className="space-y-3">
+                   {[...Array(2)].map((_, l) => (
+                     <div key={l} className="h-8 w-full bg-gray-50/50 rounded-lg animate-shimmer" />
+                   ))}
+                </div>
+                <div className="pt-2 border-t border-gray-50 mt-2">
+                   <div className="h-8 w-full bg-gray-50/50 rounded-lg animate-shimmer" />
+                </div>
+             </div>
+          </div>
+        </div>
       </div>
     </div>
   );

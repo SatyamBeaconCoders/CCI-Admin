@@ -11,8 +11,27 @@ export default function Masters() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  if (loading && !error) {
+    return (
+      <div className="p-0 sm:p-2">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8 space-y-2">
+            <div className="h-8 w-64 bg-gray-200/50 rounded animate-shimmer" />
+            <div className="h-4 w-48 bg-gray-100/50 rounded animate-shimmer" />
+          </div>
+          <div className="bg-white/90 p-2 rounded-xl border border-gray-100 shadow-sm inline-flex gap-2 mb-6">
+             <div className="h-10 w-28 bg-gray-50 rounded-lg animate-shimmer" />
+             <div className="h-10 w-28 bg-gray-50 rounded-lg animate-shimmer" />
+          </div>
+          <div className="bg-white/90 rounded-xl border border-gray-100 shadow-sm p-5 h-20 mb-6 animate-shimmer opacity-50" />
+          <div className="bg-white/90 rounded-xl border border-gray-100 shadow-sm h-[400px] animate-shimmer opacity-30" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="p-0 sm:p-2">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -32,7 +51,7 @@ export default function Masters() {
         )}
 
         {/* ===== Tabs ===== */}
-        <div className="bg-white rounded-xl shadow-sm p-2 mb-6 inline-flex">
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 p-2 mb-6 inline-flex">
           <Tab 
             label="Rooms" 
             icon={<Home className="w-4 h-4" />}
