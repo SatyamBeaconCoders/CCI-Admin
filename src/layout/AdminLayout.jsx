@@ -1,5 +1,3 @@
-
-
 // 📁 layout/AdminLayout.jsx
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -14,8 +12,6 @@ import {
   X,
   Building2,
   Clock,
-  Activity,
-  Star,
   Moon,
   Sun
 } from "lucide-react";
@@ -27,14 +23,11 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
   });
-  const [notifications] = useState(0); // Notifications removed as requested
-
-
-
 
   // Save dark mode preference
   useEffect(() => {
@@ -46,50 +39,24 @@ export default function AdminLayout() {
     }
   }, [darkMode]);
 
-  // Menu items with consistent color scheme
+  // Reset collapse on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setCollapsed(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const menuItems = [
-    {
-      icon: LayoutDashboard,
-      title: "Dashboard",
-      path: "/dashboard",
-      color: "primary",
-      gradient: "from-blue-500 to-cyan-500"
-    },
-    {
-      icon: BookOpen,
-      title: "Bookings",
-      path: "/bookings",
-      color: "orange",
-      gradient: "from-orange-500 to-amber-500"
-    },
-    {
-      icon: Home,
-      title: "Masters",
-      path: "/masters",
-      color: "green",
-      gradient: "from-emerald-500 to-teal-500"
-    },
-    {
-      icon: Users,
-      title: "Staff",
-      path: "/staff",
-      color: "purple",
-      gradient: "from-purple-500 to-violet-500"
-    },
-    // {
-    //   icon: SettingsIcon,
-    //   title: "Settings",
-    //   path: "/settings",
-    //   color: "gray",
-    //   gradient: "from-gray-600 to-gray-700"
-    // },
-    {
-      icon: FileText,
-      title: "Reports",
-      path: "/reports",
-      color: "rose",
-      gradient: "from-rose-500 to-pink-500"
-    },
+    { icon: LayoutDashboard, title: "Dashboard", path: "/dashboard" },
+    { icon: BookOpen, title: "Bookings", path: "/bookings" },
+    { icon: Home, title: "Masters", path: "/masters" },
+    { icon: Users, title: "Staff", path: "/staff" },
+    { icon: FileText, title: "Reports", path: "/reports" },
   ];
 
   const handleLogout = () => {
@@ -102,30 +69,32 @@ export default function AdminLayout() {
     return item ? item.title : "Dashboard";
   };
 
-  // Current time display
   const [currentTime, setCurrentTime] = useState('');
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
+        hour: '2-digit', minute: '2-digit', hour12: true
       });
       setCurrentTime(timeString);
     };
-
     updateTime();
     const interval = setInterval(updateTime, 60000);
     return () => clearInterval(interval);
   }, []);
 
+  // 🚀 PIXEL PERFECT CALCULATION
+  const activeIndex = menuItems.findIndex(item => item.path === location.pathname);
+  const stride = 46; 
+  const pillOffset = activeIndex * stride;
+  const pillHeight = 40;
+
   return (
-    <div className={`min-h-screen flex transition-colors duration-300 ${darkMode
+    <div className={`h-screen flex overflow-hidden transition-colors duration-300 ${darkMode
         ? 'dark bg-[#0f172a]'
         : 'bg-gradient-to-br from-slate-50 via-white to-blue-50/40'
       }`}>
-      {/* Mobile Overlay */}
+      
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -133,278 +102,195 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar Container */}
       <aside className={`
         fixed inset-y-0 left-0 z-50
-        md:relative md:translate-x-0
-        w-72 h-screen
+        h-screen
         transform transition-all duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         flex flex-col
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         ${darkMode
-          ? 'bg-gray-900 border-r border-gray-800'
-          : 'bg-white border-r border-gray-200'
+          ? 'bg-gray-900 border-r border-gray-800 shadow-xl shadow-black/20'
+          : 'bg-white border-r border-gray-200/60 shadow-sm'
         }
-        shadow-2xl md:shadow-none
+        backdrop-blur-xl
+        ${collapsed ? 'w-16' : 'w-72'}
       `}>
-        {/* Logo Section - Updated with proper logo handling */}
-        <div className={`h-24 flex items-center gap-4 px-6 ${darkMode
-            ? 'bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900'
-            : 'bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500'
-          }`}>
-          <div className="relative">
-            {/* Logo - Now with proper styling */}
-            <img
-              src={logo}
-              alt="Constitution Club of India"
-              className="h-16 w-16 object-contain"
-              style={{
-                filter: darkMode ? 'none' : 'brightness(1.1) contrast(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
-              }}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "https://via.placeholder.com/64/1e40af/ffffff?text=CCI";
-              }}
+        {/* Logo Section */}
+        <div className={`h-16 flex items-center transition-all duration-300 ${darkMode
+            ? 'bg-gray-900'
+            : 'bg-white'
+          } ${collapsed ? 'justify-center px-2' : 'px-6 gap-3'}`}>
+          <div className="relative flex-shrink-0">
+            <img src={logo} alt="CCI" className="h-9 w-9 object-contain"
+              style={{ filter: darkMode ? 'none' : 'brightness(1.05) contrast(1.05)' }}
             />
-            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 ${darkMode ? 'border-gray-900' : 'border-white'
-              }`}>
-              <div className="w-full h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500"></div>
-            </div>
           </div>
-          <div className="flex flex-col">
-            {/* Club Name with Orange, Green, White Gradient */}
-            <div className="flex flex-col">
-              <span className="font-bold text-lg tracking-wide text-white drop-shadow-md">
-                <span className="bg-gradient-to-r from-amber-400 via-white to-emerald-400 bg-clip-text text-transparent">
-                  Constitution Club
-                </span>
-              </span>
-              <span className="text-xs text-white/90 tracking-tight mt-[-2px]">
-                <span className="bg-gradient-to-r from-orange-300 via-white to-emerald-300 bg-clip-text text-transparent">
-                  of India
-                </span>
-              </span>
-              <p className="text-xs text-emerald-300/90 font-medium mt-1">• Luxury Hospitality •</p>
-            </div>
+          <div className={`flex flex-col min-w-0 transition-all duration-300 ease-in-out overflow-hidden ${collapsed ? 'opacity-0 scale-95 max-w-0 pointer-events-none' : 'opacity-100 scale-100 max-w-[200px]'}`}>
+            <span className={`text-sm font-semibold tracking-tight truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+              Constitution Club
+            </span>
+            <span className="text-[10px] text-gray-500 font-medium tracking-wide truncate">
+              of India • Hospitality
+            </span>
           </div>
           <button
-            onClick={() => setSidebarOpen(false)}
-            className="md:hidden absolute right-4 top-4 text-white/80 hover:text-white"
+            onClick={() => setCollapsed(!collapsed)}
+            className={`ml-auto hidden md:flex p-1.5 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-400 hover:text-blue-600'}`}
           >
-            <X className="w-5 h-5" />
+            <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />
           </button>
         </div>
 
-        {/* User Profile */}
-
-
-        {/* Navigation Menu */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          <div className="px-1 py-2">
-            <p className={`text-[10px] uppercase tracking-widest font-bold mb-4 px-3 ${darkMode ? 'text-gray-500' : 'text-gray-400'
-              }`}>
+        {/* Navigation */}
+        <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pr-1">
+          <div className={`px-2 transition-all duration-300 ease-in-out overflow-hidden ${collapsed ? 'max-h-0 py-0 opacity-0' : 'max-h-10 py-2 opacity-100'}`}>
+            <p className="text-[10px] uppercase font-semibold tracking-[0.1em] text-gray-400 dark:text-gray-500 mb-2 px-3 truncate">
               Main Menu
             </p>
+          </div>
+          
+          <div className="relative space-y-1.5 min-w-0">
+            {activeIndex !== -1 && (
+              <div 
+                className={`absolute left-1 right-1 rounded-xl shadow-lg shadow-blue-500/20 transition-all duration-300 ease-out pointer-events-none z-0 ${
+                    darkMode ? 'bg-blue-600' : 'bg-blue-500'
+                }`}
+                style={{ 
+                  top: `${pillOffset}px`,
+                  height: `${pillHeight}px`,
+                }}
+              />
+            )}
+
             {menuItems.map((item) => (
               <SidebarItem
                 key={item.path}
-                icon={item.icon}
-                title={item.title}
+                {...item}
+                collapsed={collapsed}
                 active={location.pathname === item.path}
-                gradient={item.gradient}
                 darkMode={darkMode}
                 onClick={() => {
                   navigate(item.path);
-                  window.innerWidth < 768 && setSidebarOpen(false);
+                  if (window.innerWidth < 768) setSidebarOpen(false);
                 }}
               />
             ))}
           </div>
 
-          {/* Current Time */}
-          <div className={`px-4 py-4 rounded-xl mx-2 ${darkMode
-              ? 'bg-gradient-to-r from-gray-800/60 to-gray-900/60 border border-gray-700/30'
-              : 'bg-gradient-to-r from-blue-50/60 to-cyan-50/60 border border-blue-100'
-            }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock className={`w-4 h-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'
-                  }`} />
-                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Current Time</span>
+          <div className={`transition-all duration-300 mt-6 ${collapsed ? 'px-0 flex justify-center' : 'px-3'}`}>
+            {collapsed ? (
+              <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center border border-blue-100 dark:border-blue-900/30 transition-all">
+                <Clock className="w-5 h-5 text-blue-500" />
               </div>
-              <span className={`text-lg font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-600'
-                }`}>{currentTime}</span>
-            </div>
+            ) : (
+              <div className={`p-4 rounded-xl border transition-all ${darkMode
+                  ? 'bg-gray-800/40 border-gray-700/50'
+                  : 'bg-gray-50 border-gray-100'
+                }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-gray-400" />
+                    <span className="text-[11px] font-medium text-gray-500 uppercase tracking-tight">Time</span>
+                  </div>
+                  <span className={`text-base font-bold tabular-nums ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                    {currentTime}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </nav>
 
-        {/* Footer Section */}
-        <div className="p-4 border-t border-gray-200/30 dark:border-gray-800/30">
-          {/* Theme Toggle */}
-          <div className="flex items-center justify-between mb-4 p-3 rounded-xl bg-gray-100/50 dark:bg-gray-800/50">
-            <div className="flex items-center gap-2">
-              {darkMode ? (
-                <Moon className="w-4 h-4 text-blue-400" />
-              ) : (
-                <Sun className="w-4 h-4 text-amber-500" />
-              )}
-              <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                {darkMode ? 'Dark Mode' : 'Light Mode'}
-              </span>
-            </div>
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${darkMode ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
-            >
-              <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${darkMode ? 'left-7' : 'left-1'
-                }`}></div>
-            </button>
-          </div>
-
-          {/* Logout Button */}
+        {/* Footer - Simplified to Sign Out Only */}
+          <div className={`p-4 pb-8 border-t ${darkMode ? 'border-gray-800' : 'border-gray-200'} ${collapsed ? 'flex flex-col items-center gap-4' : ''}`}>
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${darkMode
-                ? 'text-gray-300 hover:text-white hover:bg-gray-800/60 border border-gray-700/50 hover:border-gray-600/50'
-                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/60 border border-gray-200 hover:border-gray-300'
-              }`}
+            className={`flex items-center transition-all duration-300 group rounded-xl
+              ${collapsed ? 'w-10 h-10 justify-center hover:bg-red-50 dark:hover:bg-red-900/10' : 'w-full gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800'}
+              ${darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-600'}`}
           >
-            <div className={`p-2 rounded-lg ${darkMode ? 'bg-gray-800/60' : 'bg-gray-100'
-              }`}>
-              <LogOut className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'
-                }`} />
-            </div>
-            <span>Sign Out</span>
-            <ChevronRight className={`w-4 h-4 ml-auto ${darkMode ? 'text-gray-600' : 'text-gray-400'
-              }`} />
+            <LogOut className="w-4 h-4 flex-shrink-0" />
+            <span className={`text-sm font-medium transition-all duration-300 truncate overflow-hidden ${collapsed ? 'opacity-0 scale-95 max-w-0' : 'opacity-100 scale-100 max-w-[100px] ml-3'}`}>
+              Sign Out
+            </span>
           </button>
-
-          {/* Footer Text */}
-          <div className="mt-4 pt-4 border-t border-gray-200/30 dark:border-gray-800/30 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500"></div>
-            </div>
-            <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'
-              }`}>CCI HMS v2.1 • Premium</p>
-          </div>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
+      {/* Main Container Optimized */}
+      <div className={`
+        flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out
+        will-change-[margin]
+        ${collapsed ? 'md:ml-16' : 'md:ml-72'}
+      `}>
         <header className={`sticky top-0 z-40 ${darkMode
             ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-800/50'
             : 'bg-white/95 backdrop-blur-xl border-b border-gray-200/50'
           }`}>
           <div className="h-16 px-6 flex items-center justify-between">
-            {/* Left Section */}
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="md:hidden p-2 rounded-xl transition-colors"
-              >
-                <Menu className={`w-5 h-5 ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-                  }`} />
+              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-2 rounded-xl transition-colors">
+                <Menu className={`w-5 h-5 ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`} />
               </button>
-
-              {/* Page Title */}
               <div className="flex items-center gap-3">
-                <div className={`
-                  w-2 h-8 rounded-full bg-gradient-to-b
-                  ${location.pathname === '/dashboard' ? 'from-blue-500 to-cyan-500' :
+                <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${
+                    location.pathname === '/dashboard' ? 'from-blue-500 to-cyan-500' :
                     location.pathname === '/bookings' ? 'from-orange-500 to-amber-500' :
-                      location.pathname === '/masters' ? 'from-emerald-500 to-teal-500' :
-                        location.pathname === '/staff' ? 'from-purple-500 to-violet-500' :
-                          location.pathname === '/settings' ? 'from-gray-600 to-gray-700' :
-                            'from-rose-500 to-pink-500'}
-                `}></div>
-                <div>
-                  <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
+                    location.pathname === '/masters' ? 'from-emerald-500 to-teal-500' :
+                    location.pathname === '/staff' ? 'from-purple-500 to-violet-500' : 'from-rose-500 to-pink-500'}`}
+                />
+                <div className="min-w-0">
+                  <h1 className={`text-lg font-bold tracking-tight truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {getPageTitle()}
                   </h1>
-                  <p className={`text-sm flex items-center gap-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
-                    <Building2 className="w-3 h-3" />
+                  <p className={`text-xs truncate ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                     Constitution Club Hotel Management
                   </p>
                 </div>
               </div>
             </div>
+
+            {/* Header Actions - State-Driven Toggle */}
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                title="Toggle theme"
+                className={`
+                  w-10 h-10 flex items-center justify-center
+                  rounded-xl transition-all duration-300
+                  ${darkMode
+                    ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700 shadow-[0_0_15px_rgba(250,204,21,0.2)]'
+                    : 'bg-gray-50 text-slate-700 hover:bg-gray-100 border border-gray-100 shadow-sm'}
+                `}
+              >
+                {darkMode 
+                  ? <Sun className="w-5 h-5 transition-transform duration-500 hover:rotate-45" strokeWidth={2.5} /> 
+                  : <Moon className="w-5 h-5 transition-transform duration-500 hover:-rotate-12" strokeWidth={2.5} />}
+              </button>
             </div>
+          </div>
         </header>
 
-        {/* Main Content Area */}
-        <main className="flex-1 flex flex-col min-h-0">
-
-          {/* Scrollable Content Region */}
-          <div className="flex-1 overflow-y-auto pt-3 px-4 pb-12 md:pt-4 md:px-8 md:pb-20 lg:px-10 transition-all duration-300">
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto pt-3 px-4 pb-6 md:pt-4 md:px-8 lg:px-10">
             <Outlet />
           </div>
 
-          {/* Modern Premium Footer */}
-          <footer className={`relative border-t ${
-            darkMode 
-              ? 'border-gray-800 bg-gray-900/80 backdrop-blur-xl' 
-              : 'border-gray-200 bg-white/80 backdrop-blur-xl'
-          }`}>
-
-            {/* subtle top gradient line */}
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/40 to-transparent"></div>
-
-            <div className="px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-3">
-
-              {/* LEFT */}
-              <div className="flex items-center gap-2 text-xs md:text-sm">
-                <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>
-                  © {new Date().getFullYear()}
-                </span>
-
-                <span className={`font-medium ${
-                  darkMode ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  Constitution Club of India
-                </span>
+          {/* Footer - Compact */}
+          <footer className={`relative border-t shrink-0 ${darkMode ? 'border-gray-800 bg-gray-900/80' : 'border-gray-200 bg-white/80'} backdrop-blur-xl`}>
+            <div className="px-6 py-2.5 flex flex-col md:flex-row justify-between items-center gap-2">
+              <div className="flex items-center gap-2 text-[10px] md:text-xs">
+                <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>© {new Date().getFullYear()}</span>
+                <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Constitution Club of India</span>
               </div>
-
-              {/* RIGHT */}
               <div className="flex items-center gap-3">
-
-                {/* status dot */}
                 <div className="flex items-center gap-1.5 text-xs">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                  <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>
-                    System Live
-                  </span>
+                  <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>System Live</span>
                 </div>
-
-                {/* divider */}
-                <div className="h-4 w-px bg-gray-200 dark:bg-gray-700"></div>
-
-                {/* credit */}
-                <div className="flex items-center gap-1.5 text-xs md:text-sm">
-                  <span className={darkMode ? 'text-gray-500' : 'text-gray-400 font-medium'}>
-                    Developed and managed by
-                  </span>
-
-                  <a
-                    href="https://www.beaconcoders.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`font-extrabold transition-all ${
-                      darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
-                    } hover:underline decoration-2 underline-offset-4 tracking-tight`}
-                  >
-                    Beacon Coders
-                  </a>
-                </div>
-
+                <div className="w-px h-3 bg-gray-300 dark:bg-gray-700"></div>
+                <span className="text-[10px] md:text-xs text-blue-500 font-medium whitespace-nowrap">Developed by Beacon Coders</span>
               </div>
             </div>
           </footer>

@@ -1,10 +1,11 @@
+// 📁 components/SidebarItem.jsx
 import { ChevronRight } from "lucide-react";
 
 export default function SidebarItem({ 
   icon: Icon, 
   title, 
   active, 
-  gradient = "from-blue-500 to-cyan-500",
+  collapsed,
   darkMode = false,
   onClick 
 }) {
@@ -12,59 +13,76 @@ export default function SidebarItem({
     <button
       onClick={onClick}
       className={`
-        w-full flex items-center gap-3 px-4 py-3 rounded-xl
-        transition-all duration-200
-        group
-        relative
-        overflow-hidden
+        relative group w-full flex items-center h-10 min-w-0 overflow-hidden z-10
+        px-3 transition-all duration-300 leading-none
+        ${collapsed ? 'justify-center' : 'gap-3'}
+        rounded-xl
         ${active 
-          ? `text-white bg-blue-600 shadow-lg shadow-blue-200` 
+          ? 'text-white'
           : darkMode
-            ? 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'
+            ? 'text-gray-400 hover:text-blue-400'
+            : 'text-gray-500 hover:text-blue-600'
         }
       `}
     >
-      {/* Content */}
-      <div className="relative z-10 flex items-center gap-3 w-full">
-        <div className={`
-          p-2 rounded-lg transition-all duration-200
+      {/* WRAPPER FOR STABLE LAYOUT */}
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        {/* ICON - Stable vertical axis */}
+        <Icon className={`
+          w-5 h-5 flex-shrink-0 transition-all duration-300
           ${active 
-            ? 'bg-white/20' 
-            : darkMode
-              ? 'bg-gray-800/50 group-hover:bg-gray-700/50'
-              : 'bg-gray-50 group-hover:bg-blue-100'
+            ? 'text-white' 
+            : 'text-gray-400 group-hover:text-blue-500'
+          }
+        `} />
+
+        {/* TEXT - Stable animatable max-width */}
+        <span className={`
+          text-sm font-medium tracking-tight truncate whitespace-nowrap
+          transition-all duration-300 ease-in-out overflow-hidden
+          ${collapsed 
+            ? 'opacity-0 scale-95 max-w-0 ml-0' 
+            : 'opacity-100 scale-100 max-w-[140px] ml-0'
           }
         `}>
-          <Icon className={`
-            w-4 h-4 transition-colors duration-200
-            ${active 
-              ? 'text-white' 
-              : darkMode
-                ? 'text-gray-500 group-hover:text-gray-300'
-                : 'text-gray-500 group-hover:text-blue-600'
-            }
-          `} />
-        </div>
-        
-        <span className="font-semibold text-sm">{title}</span>
-        
-        {active && (
-          <>
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r shadow-[2px_0_8px_rgba(255,255,255,0.8)]"></div>
-            <div className="ml-auto">
-              <div className="w-1.5 h-1.5 rounded-full bg-white/90"></div>
-            </div>
-          </>
-        )}
-        
-        {!active && (
-          <ChevronRight className={`
-            w-3 h-3 ml-auto transition-all duration-200
-            opacity-0 group-hover:opacity-100 group-hover:translate-x-1
-            ${darkMode ? 'text-gray-600' : 'text-gray-400'}
-          `} />
-        )}
+          {title}
+        </span>
+      </div>
+
+      {/* ACTIVE PULSE - Fades and scales */}
+      <div 
+        className={`
+          absolute right-2 w-1.5 h-1.5 rounded-full bg-white/40
+          transition-all duration-300
+          ${(collapsed || !active) ? 'opacity-0 scale-0' : 'opacity-100 animate-pulse'}
+        `}
+      />
+
+      {/* ARROW - Stable animatable max-width */}
+      <ChevronRight
+        className={`
+          w-3.5 h-3.5 ml-auto flex-shrink-0
+          transition-all duration-300 ease-in-out
+          ${collapsed 
+            ? 'opacity-0 scale-75 max-w-0' 
+            : active 
+              ? 'opacity-0' 
+              : 'opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 max-w-[20px]'
+          }
+        `}
+      />
+
+      {/* TOOLTIP */}
+      <div className={`
+        absolute left-full ml-3 px-3 py-1.5 text-xs font-semibold rounded-md
+        bg-gray-900 text-white whitespace-nowrap
+        shadow-xl pointer-events-none z-50 transition-all duration-200
+        ${collapsed 
+          ? 'opacity-0 group-hover:opacity-100 translate-x-[-10px] group-hover:translate-x-0' 
+          : 'opacity-0 pointer-events-none'
+        }
+      `}>
+        {title}
       </div>
     </button>
   );
