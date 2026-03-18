@@ -137,13 +137,13 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside className={`
         fixed lg:sticky top-0 left-0 z-50
-        w-80 h-screen
+        w-72 h-screen
         transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         flex flex-col
         ${darkMode 
-          ? 'bg-gray-900/95 backdrop-blur-xl border-r border-gray-800' 
-          : 'bg-white/95 backdrop-blur-xl border-r border-gray-200'
+          ? 'bg-gray-900 border-r border-gray-800' 
+          : 'bg-white border-r border-gray-200'
         }
         shadow-2xl
       `}>
@@ -201,13 +201,12 @@ export default function AdminLayout() {
 
 
         {/* Navigation Menu */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <div className="px-2 py-3">
-            <p className={`text-xs uppercase tracking-wider font-semibold mb-3 flex items-center gap-2 ${
-              darkMode ? 'text-gray-400' : 'text-gray-500'
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          <div className="px-1 py-2">
+            <p className={`text-[10px] uppercase tracking-widest font-bold mb-4 px-3 ${
+              darkMode ? 'text-gray-500' : 'text-gray-400'
             }`}>
-              <div className="w-1 h-4 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full"></div>
-              Navigation
+              Main Menu
             </p>
             {menuItems.map((item) => (
               <SidebarItem
