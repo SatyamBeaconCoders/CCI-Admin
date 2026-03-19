@@ -64,7 +64,7 @@ function SharedMasterHeader({ activeTab, setActiveTab, searchTerm, setSearchTerm
   const borderFocus = isOrange ? 'border-orange-500' : 'border-green-500';
 
   return (
-    <div className="flex flex-col lg:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-white/20 shadow-sm mb-4">
+    <div className="flex flex-col md:flex-row lg:flex-row justify-between items-center md:justify-start lg:justify-between gap-4 md:gap-8 lg:gap-4 bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-white/20 shadow-sm mb-4">
       <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
         {/* Tabs inside the card */}
         <div className="bg-gray-100/50 p-1 rounded-xl inline-flex w-full md:w-auto">
@@ -442,6 +442,7 @@ function RoomsMaster({ setError, setLoading, activeTab, setActiveTab }) {
       <div className="bg-white border border-gray-100 rounded-2xl shadow-md min-h-0 flex-1 flex flex-col overflow-hidden">
         {/* ===== MOBILE CARD VIEW (< lg) ===== */}
         <div className="lg:hidden overflow-auto flex-1 custom-scrollbar scroll-smooth overscroll-contain">
+          <div className="max-w-3xl mx-auto w-full">
           {paginatedRooms.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {paginatedRooms.map(room => (
@@ -488,6 +489,7 @@ function RoomsMaster({ setError, setLoading, activeTab, setActiveTab }) {
           ) : (
             <div className="py-12 text-center text-gray-500 font-medium italic">No rooms found.</div>
           )}
+          </div>
         </div>
 
         {/* ===== DESKTOP TABLE VIEW (lg+) ===== */}
@@ -864,6 +866,7 @@ function MembersMaster({ setError, setLoading, activeTab, setActiveTab }) {
       <div className="bg-white border border-gray-100 rounded-2xl shadow-md min-h-0 flex-1 flex flex-col overflow-hidden">
         {/* ===== MOBILE CARD VIEW (< lg) ===== */}
         <div className="lg:hidden overflow-auto flex-1 custom-scrollbar scroll-smooth overscroll-contain">
+          <div className="max-w-3xl mx-auto w-full">
           {paginatedMembers.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {paginatedMembers.map(m => (
@@ -911,6 +914,7 @@ function MembersMaster({ setError, setLoading, activeTab, setActiveTab }) {
           ) : (
             <div className="py-12 text-center text-gray-500 font-medium italic">No members found.</div>
           )}
+          </div>
         </div>
 
         {/* ===== DESKTOP TABLE VIEW (lg+) ===== */}

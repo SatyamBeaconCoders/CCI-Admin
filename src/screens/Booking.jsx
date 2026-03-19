@@ -815,7 +815,7 @@ export default function Bookings() {
 
         {/* Controls */}
         <div className="sticky top-0 z-20 bg-white/95 supports-[backdrop-filter]:bg-white/95 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-md p-4 mb-6 flex-shrink-0">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-start lg:justify-between gap-4 md:gap-8 lg:gap-4">
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
               <div className="relative flex-1 sm:w-80 whitespace-nowrap">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -858,6 +858,7 @@ export default function Bookings() {
         <div className="flex-1 min-h-0 min-w-0 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
           {/* ===== MOBILE CARD VIEW (< md) ===== */}
           <div className="lg:hidden overflow-auto flex-1 scroll-smooth overscroll-contain custom-scrollbar min-h-0">
+            <div className="max-w-3xl mx-auto w-full">
             {paginatedBookings.length > 0 ? (
               <div className="divide-y divide-gray-100">
                 {paginatedBookings.map((b) => (
@@ -1006,6 +1007,7 @@ export default function Bookings() {
                 </div>
               </div>
             )}
+            </div>
           </div>
 
           {/* ===== DESKTOP TABLE VIEW (md+) ===== */}

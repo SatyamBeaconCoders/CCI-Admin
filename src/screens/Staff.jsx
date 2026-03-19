@@ -379,7 +379,7 @@ export default function Staff() {
 
         {/* Header with Actions */}
         <div className="bg-white border border-gray-100 rounded-2xl shadow-md p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+          <div className="flex flex-col md:flex-row gap-6 items-center md:justify-start lg:justify-between lg:gap-6 md:gap-12">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl">
                 <User className="w-6 h-6 text-blue-600" />
@@ -417,6 +417,7 @@ export default function Staff() {
         <div className="bg-white border border-gray-100 rounded-2xl shadow-md flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* ===== MOBILE CARD VIEW (< lg) ===== */}
           <div className="lg:hidden overflow-auto flex-1 custom-scrollbar scroll-smooth overscroll-contain">
+            <div className="max-w-3xl mx-auto w-full">
             {paginatedStaff.length > 0 ? (
               <div className="divide-y divide-gray-100">
                 {paginatedStaff.map((staffMember) => (
@@ -482,6 +483,7 @@ export default function Staff() {
             ) : (
               <div className="py-12 text-center text-gray-500 font-medium">No staff members found</div>
             )}
+            </div>
           </div>
 
           {/* ===== DESKTOP TABLE VIEW (lg+) ===== */}
