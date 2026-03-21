@@ -59,6 +59,10 @@ export default function AdminLayout() {
     return item ? item.title : "Dashboard";
   };
 
+  useEffect(() => {
+    document.title = `${getPageTitle()} | CCI Admin`;
+  }, [location.pathname]);
+
   const [currentTime, setCurrentTime] = useState('');
   useEffect(() => {
     const updateTime = () => {
