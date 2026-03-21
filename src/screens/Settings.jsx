@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Pencil, X, Settings as SettingsIcon, CheckCircle, AlertCircle, Search, Save, RefreshCw } from "lucide-react";
 import * as settingService from "../services/settingServices";
+import { Modal } from "../components/UIComponents";
 
 export default function Settings() {
   const [settings, setSettings] = useState([]);
@@ -324,115 +325,93 @@ export default function Settings() {
         </div>
 
         {/* Settings Form Modal */}
-        {showForm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-50 rounded-lg">
-                      <SettingsIcon className="w-5 h-5 text-purple-500" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">
-                        {editingSetting ? "Edit Setting" : "Add New Setting"}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {editingSetting ? "Update system setting" : "Add new system parameter"}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowForm(false);
-                      resetForm();
-                    }}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Setting Key *
-                  </label>
-                  {editingSetting ? (
-                    <div className="px-4 py-2 bg-gray-100 rounded-lg text-gray-700">
-                      {form.key}
-                    </div>
-                  ) : (
-                    <input
-                      type="text"
-                      placeholder="e.g., TAX_RATE, CHECK_IN_TIME"
-                      value={form.key}
-                      onChange={(e) => setForm({ ...form, key: e.target.value.toUpperCase() })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  )}
-                  <p className="text-xs text-gray-500 mt-1">
-                    Use uppercase with underscores (e.g., SITE_NAME)
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Value *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter value"
-                    value={form.value}
-                    onChange={(e) => setForm({ ...form, value: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    placeholder="Enter description for this setting"
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    rows="2"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
-                {getCommonSetting(form.key) && (
-                  <div className="p-3 bg-purple-50 rounded-lg">
-                    <p className="text-sm text-purple-700">
-                      This is a common setting: {getCommonSetting(form.key)?.label}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-                <button
-                  onClick={() => {
-                    setShowForm(false);
-                    resetForm();
-                  }}
-                  className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  className="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {editingSetting ? "Update Setting" : "Save Setting"}
-                </button>
-              </div>
+        <Modal
+          isOpen={showForm}
+          onClose={() => { setShowForm(false); resetForm(); }}
+          title={editingSetting ? "Edit Setting" : "Add New Setting"}
+          subtitle={editingSetting ? "Update system setting" : "Add new system parameter"}
+          icon={SettingsIcon}
+          maxWidth="max-w-md"
+          footer={
+            <div className="flex justify-end gap-3 w-full">
+              <button 
+                onClick={() => { setShowForm(false); resetForm(); }} 
+                className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSubmit} 
+                className="px-6 py-2.5 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-100 active:scale-95 flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {editingSetting ? "Update Setting" : "Save Setting"}
+              </button>
             </div>
+          }
+        >
+          <div className="space-y-6">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                Setting Key <span className="text-red-500">*</span>
+              </label>
+              {editingSetting ? (
+                <div className="px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 font-black tracking-tight">
+                  {form.key}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="e.g., TAX_RATE, CHECK_IN_TIME"
+                  value={form.key}
+                  onChange={(e) => setForm({ ...form, key: e.target.value.toUpperCase() })}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm font-bold transition-all"
+                />
+              )}
+              <p className="text-[10px] text-gray-400 mt-2 font-medium italic">
+                Recommendation: Use uppercase with underscores (e.g., SITE_NAME)
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                Value <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Enter value"
+                value={form.value}
+                onChange={(e) => setForm({ ...form, value: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm font-bold transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                Description
+              </label>
+              <textarea
+                placeholder="Explain what this setting controls..."
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                rows="3"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm font-medium transition-all resize-none"
+              />
+            </div>
+
+            {getCommonSetting(form.key) && (
+              <div className="p-4 bg-purple-50/50 border border-purple-100 rounded-xl flex items-center gap-3">
+                <div className="p-1.5 bg-white rounded-lg shadow-sm">
+                  <SettingsIcon className="w-4 h-4 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-purple-900 leading-none">Standard System Parameter</p>
+                  <p className="text-[10px] text-purple-600 font-medium mt-1 italic">{getCommonSetting(form.key)?.label}</p>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </Modal>
 
         {/* Loading Overlay */}
         {loading && (

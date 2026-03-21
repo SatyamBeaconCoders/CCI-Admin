@@ -1,7 +1,41 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2, Pencil, X, Users, Home, User, Mail, Phone, CheckCircle, AlertCircle, Search, ChevronLeft, ChevronRight, ChevronDown, Eye, Shield } from "lucide-react";
-import { PageLayout, ActionIcon, EmptyState, MobileCardSkeleton, HeaderSkeleton, ContentCard, Pagination } from "../components/UIComponents";
+import {
+  Plus,
+  Trash2,
+  Pencil,
+  X,
+  Users,
+  Home,
+  User,
+  Mail,
+  Phone,
+  CheckCircle,
+  AlertCircle,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Eye,
+  Shield,
+} from "lucide-react";
+import {
+  PageLayout,
+  ActionIcon,
+  EmptyState,
+  ContentCard,
+  Pagination,
+  Modal,
+  MobileCardSkeleton,
+  HeaderSkeleton,
+} from "../components/UIComponents";
+import {
+  safeString,
+  safeArray,
+  safeNumber,
+  FALLBACK,
+  logMissing,
+} from "../utils/dataUtils";
 
 // Import services
 import * as roomService from "../services/roomServices";
@@ -26,19 +60,19 @@ export default function Masters() {
       )}
 
       {activeTab === "rooms" && (
-        <RoomsMaster 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
-          setError={setError} 
-          setLoading={setLoading} 
+        <RoomsMaster
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          setError={setError}
+          setLoading={setLoading}
         />
       )}
       {activeTab === "members" && (
-        <MembersMaster 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
-          setError={setError} 
-          setLoading={setLoading} 
+        <MembersMaster
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          setError={setError}
+          setLoading={setLoading}
         />
       )}
 
@@ -56,8 +90,16 @@ export default function Masters() {
 }
 
 /* ================= SHARED HEADER ================= */
-function SharedMasterHeader({ activeTab, setActiveTab, searchTerm, setSearchTerm, onAdd, addLabel, themeColor }) {
-  const isOrange = themeColor === 'orange';
+function SharedMasterHeader({
+  activeTab,
+  setActiveTab,
+  searchTerm,
+  setSearchTerm,
+  onAdd,
+  addLabel,
+  themeColor,
+}) {
+  const isOrange = themeColor === "orange";
 
   return (
     <div className="sticky top-0 z-10 w-full bg-white/95 backdrop-blur-sm border border-gray-100 px-3 py-2 h-14 flex items-center justify-between gap-2 rounded-2xl shadow-md mb-4 flex-shrink-0 font-medium">
@@ -97,7 +139,7 @@ function SharedMasterHeader({ activeTab, setActiveTab, searchTerm, setSearchTerm
             type="text"
             placeholder="Search..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className={`w-full h-10 pl-8 pr-3 bg-gray-50 border border-gray-100 rounded-lg text-sm outline-none transition-all placeholder:text-gray-400 font-medium ${
               isOrange
                 ? "focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400"
@@ -123,8 +165,6 @@ function SharedMasterHeader({ activeTab, setActiveTab, searchTerm, setSearchTerm
   );
 }
 
-
-
 /* ================= ROOMS MASTER ================= */
 function RoomsMaster({ setError, setLoading, setActiveTab }) {
   const [rooms, setRooms] = useState([]);
@@ -140,7 +180,7 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
     status: "Available",
     price_3day: "",
     price_7day: "",
-    price_8day: ""
+    price_8day: "",
   });
 
   const navigate = useNavigate();
@@ -153,7 +193,9 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
     try {
       setDataLoading(true);
       const response = await roomService.getRooms();
-      const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+      const data = Array.isArray(response.data)
+        ? response.data
+        : response.data?.data || [];
       setRooms(data);
       setCurrentPage(0);
       setError("");
@@ -170,20 +212,23 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
   }, []);
 
   const filteredRooms = useMemo(() => {
-    if (!Array.isArray(rooms)) return [];
-    return rooms.filter(room => {
-      if (!room) return false;
-      const term = searchTerm.toLowerCase();
+    const term = searchTerm.toLowerCase();
+    return safeArray(rooms).filter((room) => {
+      const roomNo = safeString(room.room_no).toLowerCase();
+      const type = safeString(room.type).toLowerCase();
+      const status = safeString(room.status).toLowerCase();
+
       return (
-        (room.room_no || "").toLowerCase().includes(term) ||
-        (room.type || "").toLowerCase().includes(term) ||
-        (room.status || "").toLowerCase().includes(term)
+        roomNo.includes(term) || type.includes(term) || status.includes(term)
       );
     });
   }, [rooms, searchTerm]);
 
   const paginatedRooms = useMemo(() => {
-    return filteredRooms.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+    return filteredRooms.slice(
+      currentPage * itemsPerPage,
+      (currentPage + 1) * itemsPerPage,
+    );
   }, [filteredRooms, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredRooms.length / itemsPerPage) || 1;
@@ -205,15 +250,15 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
         ...form,
         price_3day: parseFloat(form.price_3day),
         price_7day: parseFloat(form.price_7day),
-        price_8day: parseFloat(form.price_8day)
+        price_8day: parseFloat(form.price_8day),
       };
-      
+
       if (editingRoom) {
         await roomService.updateRoom(editingRoom.id, payload);
       } else {
         await roomService.createRoom(payload);
       }
-      
+
       await fetchRooms();
       setShowForm(false);
       resetForm();
@@ -233,7 +278,11 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
       await fetchRooms();
     } catch (err) {
       console.error("❌ DELETE ERROR:", err);
-      setError(err.response?.data?.message || err.response?.data?.error || "Failed to delete room.");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to delete room.",
+      );
     } finally {
       setLoading(false);
     }
@@ -247,7 +296,7 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
       status: "Available",
       price_3day: "",
       price_7day: "",
-      price_8day: ""
+      price_8day: "",
     });
     setEditingRoom(null);
     setFormError("");
@@ -262,7 +311,7 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
       status: room.status || "Available",
       price_3day: room.price_3day || "",
       price_7day: room.price_7day || "",
-      price_8day: room.price_8day || ""
+      price_8day: room.price_8day || "",
     });
     setShowForm(true);
   };
@@ -282,19 +331,35 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
               <table className="w-full text-left border-separate border-spacing-0">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gray-50/95 backdrop-blur-sm border-b border-gray-100">
-                    <th className="py-4 px-6"><div className="h-2 w-24 bg-gray-200 rounded animate-pulse" /></th>
-                    <th className="py-4 px-6"><div className="h-2 w-32 bg-gray-200 rounded animate-pulse" /></th>
-                    <th className="py-4 px-6 text-center"><div className="h-2 w-24 bg-gray-200 rounded animate-pulse mx-auto" /></th>
-                    <th className="py-4 px-6 text-right"><div className="h-2 w-16 bg-gray-200 rounded animate-pulse ml-auto" /></th>
+                    <th className="py-4 px-6">
+                      <div className="h-2 w-24 bg-gray-200 rounded animate-pulse" />
+                    </th>
+                    <th className="py-4 px-6">
+                      <div className="h-2 w-32 bg-gray-200 rounded animate-pulse" />
+                    </th>
+                    <th className="py-4 px-6 text-center">
+                      <div className="h-2 w-24 bg-gray-200 rounded animate-pulse mx-auto" />
+                    </th>
+                    <th className="py-4 px-6 text-right">
+                      <div className="h-2 w-16 bg-gray-200 rounded animate-pulse ml-auto" />
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {[...Array(8)].map((_, i) => (
                     <tr key={i}>
-                      <td className="py-3 px-6"><div className="h-4 w-28 bg-gray-100 rounded animate-pulse" /></td>
-                      <td className="py-3 px-6"><div className="h-3 w-36 bg-gray-50 rounded animate-pulse" /></td>
-                      <td className="py-3 px-6 text-center"><div className="h-6 w-20 bg-gray-50 rounded-lg animate-pulse mx-auto" /></td>
-                      <td className="py-3 px-6 text-right"><div className="h-8 w-20 bg-gray-50 rounded-lg animate-pulse ml-auto" /></td>
+                      <td className="py-3 px-6">
+                        <div className="h-4 w-28 bg-gray-100 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3 px-6">
+                        <div className="h-3 w-36 bg-gray-50 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3 px-6 text-center">
+                        <div className="h-6 w-20 bg-gray-50 rounded-lg animate-pulse mx-auto" />
+                      </td>
+                      <td className="py-3 px-6 text-right">
+                        <div className="h-8 w-20 bg-gray-50 rounded-lg animate-pulse ml-auto" />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -304,14 +369,17 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
         </>
       ) : (
         <>
-          <SharedMasterHeader 
-            activeTab="rooms" 
-            setActiveTab={setActiveTab} 
-            searchTerm={searchTerm} 
-            setSearchTerm={setSearchTerm} 
-            onAdd={() => { resetForm(); setShowForm(true); }} 
-            addLabel="Add Room" 
-            themeColor="orange" 
+          <SharedMasterHeader
+            activeTab="rooms"
+            setActiveTab={setActiveTab}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            onAdd={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+            addLabel="Add Room"
+            themeColor="orange"
           />
 
           <ContentCard className="flex-1">
@@ -319,37 +387,82 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
             <div className="lg:hidden overflow-auto flex-1 custom-scrollbar scroll-smooth overscroll-contain">
               {paginatedRooms.length > 0 ? (
                 <div className="p-4 space-y-2">
-                  {paginatedRooms.map(room => (
-                    <div key={room.id} className="p-3 bg-white border border-gray-100 rounded-xl hover:bg-orange-50/40 transition-all duration-200 cursor-pointer shadow-sm group">
+                  {paginatedRooms.map((room) => (
+                    <div
+                      key={room.id}
+                      className="p-3 bg-white border border-gray-100 rounded-xl hover:bg-orange-50/40 transition-all duration-200 cursor-pointer shadow-sm group"
+                    >
                       <div className="flex items-start justify-between gap-2 mb-1.5">
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-gray-900 leading-tight truncate">Room {room.room_no}</p>
+                          <p className="text-sm font-bold text-gray-900 leading-tight truncate">
+                            Room {room.room_no}
+                          </p>
                           <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                            <span className="text-[10px] text-gray-400 font-medium italic truncate">{room.type}</span>
+                            <span className="text-[10px] text-gray-400 font-medium italic truncate">
+                              {room.type}
+                            </span>
                             <span className="w-0.5 h-0.5 bg-gray-300 rounded-full shrink-0"></span>
-                            <span className="text-[10px] text-gray-400 font-medium shrink-0">Limit: {room.guest_limit}</span>
+                            <span className="text-[10px] text-gray-400 font-medium shrink-0">
+                              Limit: {room.guest_limit}
+                            </span>
                           </div>
                         </div>
-                        <span className={`shrink-0 px-2 py-0.5 rounded-lg text-[9px] font-extrabold uppercase tracking-wide border leading-tight ${
-                          room.status === 'Available' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-blue-100 text-blue-700 border-blue-200'
-                        }`}>{room.status}</span>
+                        <span
+                          className={`shrink-0 px-2 py-0.5 rounded-lg text-[9px] font-extrabold uppercase tracking-wide border leading-tight ${
+                            room.status === "Available"
+                              ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                              : "bg-blue-100 text-blue-700 border-blue-200"
+                          }`}
+                        >
+                          {room.status}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3 text-[11px] text-gray-500 leading-tight min-w-0 flex-1">
-                          <span className="font-bold tabular-nums truncate">3D: ₹{room.price_3day}</span>
+                          <span className="font-bold tabular-nums truncate">
+                            3D: ₹{room.price_3day}
+                          </span>
                           <span className="text-gray-300 shrink-0">•</span>
-                          <span className="font-bold tabular-nums truncate">7D: ₹{room.price_7day}</span>
+                          <span className="font-bold tabular-nums truncate">
+                            7D: ₹{room.price_7day}
+                          </span>
                           <span className="text-gray-300 shrink-0">•</span>
-                          <span className="font-bold tabular-nums truncate">8D+: ₹{room.price_8day}</span>
+                          <span className="font-bold tabular-nums truncate">
+                            8D+: ₹{room.price_8day}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <ActionIcon onClick={(e) => { e.stopPropagation(); openEdit(room); }} title="Edit Room" ringColor="orange-500" className="bg-orange-50 text-orange-600 border border-orange-100">
+                          <ActionIcon
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEdit(room);
+                            }}
+                            title="Edit Room"
+                            ringColor="orange-500"
+                            className="bg-orange-50 text-orange-600 border border-orange-100"
+                          >
                             <Pencil className="w-3.5 h-3.5" />
                           </ActionIcon>
-                          <ActionIcon onClick={(e) => { e.stopPropagation(); navigate(`/masters/rooms/${room.id}`); }} title="View Room" ringColor="blue-500" className="bg-blue-50 text-blue-600 border border-blue-100">
+                          <ActionIcon
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/masters/rooms/${room.id}`);
+                            }}
+                            title="View Room"
+                            ringColor="blue-500"
+                            className="bg-blue-50 text-blue-600 border border-blue-100"
+                          >
                             <Eye className="w-3.5 h-3.5" />
                           </ActionIcon>
-                          <ActionIcon onClick={(e) => { e.stopPropagation(); handleDelete(room.id); }} title="Delete Room" ringColor="rose-500" className="bg-rose-50 text-rose-600 border border-rose-100">
+                          <ActionIcon
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(room.id);
+                            }}
+                            title="Delete Room"
+                            ringColor="rose-500"
+                            className="bg-rose-50 text-rose-600 border border-rose-100"
+                          >
                             <Trash2 className="w-3.5 h-3.5" />
                           </ActionIcon>
                         </div>
@@ -358,113 +471,337 @@ function RoomsMaster({ setError, setLoading, setActiveTab }) {
                   ))}
                 </div>
               ) : (
-                <EmptyState icon={Home} title="No rooms found" message="No records match your search criteria." actionText="Add Room" onAction={() => { resetForm(); setShowForm(true); }} themeColor="orange" />
+                <EmptyState
+                  icon={Home}
+                  title="No rooms found"
+                  message="No records match your search criteria."
+                  actionText="Add Room"
+                  onAction={() => {
+                    resetForm();
+                    setShowForm(true);
+                  }}
+                  themeColor="orange"
+                />
               )}
             </div>
 
             {/* DESKTOP TABLE VIEW (lg+) */}
             <div className="hidden lg:block overflow-auto flex-1 custom-scrollbar scroll-smooth overscroll-contain">
-                <table className="w-full text-left border-separate border-spacing-0">
-                  <thead className="sticky top-0 z-10">
-                    <tr className="bg-gray-50/95 backdrop-blur-sm border-b border-gray-100">
-                      <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Room Information</th>
-                      <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Pricing Structure</th>
-                      <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none text-center">Status</th>
-                      <th className="py-4 px-6 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {paginatedRooms.length > 0 ? (
-                      paginatedRooms.map(room => (
-                        <tr key={room.id} className="hover:bg-orange-50/40 transition-all duration-200 group cursor-pointer border-l-4 border-transparent hover:border-orange-600">
-                          <td className="py-4 px-6">
-                            <div className="flex flex-col gap-1.5 min-w-0">
-                              <p className="text-sm font-bold text-gray-900 group-hover:text-orange-700 transition-colors tracking-tight leading-relaxed truncate">Room {room.room_no}</p>
-                              <div className="flex items-center gap-2 min-w-0">
-                                 <span className="text-xs text-gray-400 font-medium tracking-tight italic truncate">{room.type}</span>
-                                 <span className="w-1 h-1 bg-gray-300 rounded-full shrink-0"></span>
-                                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest shrink-0">Limit: {room.guest_limit} Guests</span>
-                              </div>
+              <table className="w-full text-left border-separate border-spacing-0">
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-gray-50/95 backdrop-blur-sm border-b border-gray-100">
+                    <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                      Room Information
+                    </th>
+                    <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                      Pricing Structure
+                    </th>
+                    <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none text-center">
+                      Status
+                    </th>
+                    <th className="py-4 px-6 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {paginatedRooms.length > 0 ? (
+                    paginatedRooms.map((room) => (
+                      <tr
+                        key={room.id}
+                        className="hover:bg-orange-50/40 transition-all duration-200 group cursor-pointer border-l-4 border-transparent hover:border-orange-600"
+                      >
+                        <td className="py-4 px-6">
+                          <div className="flex flex-col gap-1.5 min-w-0">
+                            <p className="text-sm font-bold text-gray-900 group-hover:text-orange-700 transition-colors tracking-tight leading-relaxed truncate">
+                              Room {room.room_no}
+                            </p>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-xs text-gray-400 font-medium tracking-tight italic truncate">
+                                {room.type}
+                              </span>
+                              <span className="w-1 h-1 bg-gray-300 rounded-full shrink-0"></span>
+                              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest shrink-0">
+                                Limit: {room.guest_limit} Guests
+                              </span>
                             </div>
-                          </td>
-                          <td className="py-4 px-6 text-sm">
-                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0">
-                                <div className="flex items-baseline gap-1.5">
-                                   <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">3 Day:</span>
-                                   <span className="font-bold text-gray-900 tabular-nums">₹{room.price_3day}</span>
-                                </div>
-                                <span className="text-gray-300 shrink-0 text-xs hidden xl:block">•</span>
-                                <div className="flex items-baseline gap-1.5">
-                                   <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">7 Day:</span>
-                                   <span className="font-bold text-gray-900 tabular-nums">₹{room.price_7day}</span>
-                                </div>
-                                <span className="text-gray-300 shrink-0 text-xs hidden xl:block">•</span>
-                                <div className="flex items-baseline gap-1.5">
-                                   <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">8+ Day:</span>
-                                   <span className="font-bold text-gray-900 tabular-nums">₹{room.price_8day}</span>
-                                </div>
-                             </div>
-                          </td>
-                          <td className="py-4 px-6 text-center">
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wide border ${
-                              room.status === 'Available' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-blue-100 text-blue-700 border-blue-200'
-                            }`}>{room.status}</span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <div className="flex justify-end gap-2.5 shrink-0">
-                               <ActionIcon onClick={(e) => { e.stopPropagation(); openEdit(room); }} title="Edit Room" ringColor="orange-500" className="bg-orange-50 text-orange-600 border border-orange-100">
-                                <Pencil className="w-4 h-4" />
-                               </ActionIcon>
-                               <ActionIcon onClick={(e) => { e.stopPropagation(); navigate(`/masters/rooms/${room.id}`); }} title="View Room" ringColor="blue-500" className="bg-blue-50 text-blue-600 border border-blue-100">
-                                <Eye className="w-4 h-4" />
-                               </ActionIcon>
-                               <ActionIcon onClick={(e) => { e.stopPropagation(); handleDelete(room.id); }} title="Delete Room" ringColor="rose-500" className="bg-rose-50 text-rose-600 border border-rose-100">
-                                <Trash2 className="w-4 h-4" />
-                               </ActionIcon>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-sm">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0">
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                3 Day:
+                              </span>
+                              <span className="font-bold text-gray-900 tabular-nums">
+                                ₹{room.price_3day}
+                              </span>
                             </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="4">
-                          <EmptyState icon={Home} title="No rooms found" message="No records match your search criteria." actionText="Add Room" onAction={() => { resetForm(); setShowForm(true); }} themeColor="orange" />
+                            <span className="text-gray-300 shrink-0 text-xs hidden xl:block">
+                              •
+                            </span>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                7 Day:
+                              </span>
+                              <span className="font-bold text-gray-900 tabular-nums">
+                                ₹{room.price_7day}
+                              </span>
+                            </div>
+                            <span className="text-gray-300 shrink-0 text-xs hidden xl:block">
+                              •
+                            </span>
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                8+ Day:
+                              </span>
+                              <span className="font-bold text-gray-900 tabular-nums">
+                                ₹{room.price_8day}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wide border ${
+                              room.status === "Available"
+                                ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                : "bg-blue-100 text-blue-700 border-blue-200"
+                            }`}
+                          >
+                            {room.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex justify-end gap-2.5 shrink-0">
+                            <ActionIcon
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEdit(room);
+                              }}
+                              title="Edit Room"
+                              ringColor="orange-500"
+                              className="bg-orange-50 text-orange-600 border border-orange-100"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </ActionIcon>
+                            <ActionIcon
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/masters/rooms/${room.id}`);
+                              }}
+                              title="View Room"
+                              ringColor="blue-500"
+                              className="bg-blue-50 text-blue-600 border border-blue-100"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </ActionIcon>
+                            <ActionIcon
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(room.id);
+                              }}
+                              title="Delete Room"
+                              ringColor="rose-500"
+                              className="bg-rose-50 text-rose-600 border border-rose-100"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </ActionIcon>
+                          </div>
                         </td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4">
+                        <EmptyState
+                          icon={Home}
+                          title="No rooms found"
+                          message="No records match your search criteria."
+                          actionText="Add Room"
+                          onAction={() => {
+                            resetForm();
+                            setShowForm(true);
+                          }}
+                          themeColor="orange"
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-            <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filteredRooms.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} onItemsPerPageChange={setItemsPerPage} themeColor="orange" />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredRooms.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+              themeColor="orange"
+            />
           </ContentCard>
         </>
       )}
+      {/* Rooms Form Modal */}
+      <Modal
+        isOpen={showForm}
+        onClose={() => {
+          setShowForm(false);
+          resetForm();
+        }}
+        title={editingRoom ? "Edit Room" : "Add Room"}
+        subtitle={
+          editingRoom ? "Update room configuration" : "Create new room record"
+        }
+        icon={Home}
+        maxWidth="max-w-md"
+        footer={
+          <div className="flex justify-end gap-3 w-full font-medium">
+            <button
+              onClick={() => {
+                setShowForm(false);
+                resetForm();
+              }}
+              className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="px-5 py-2.5 bg-orange-500 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-orange-100 hover:bg-orange-600 transition-all active:scale-95 text-sm"
+            >
+              <CheckCircle className="w-4 h-4" /> Save Room
+            </button>
+          </div>
+        }
+      >
+        {formError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-red-700 font-bold">{formError}</p>
+            </div>
+            <button
+              onClick={() => setFormError("")}
+              className="p-1 hover:bg-red-100 rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4 text-red-400" />
+            </button>
+          </div>
+        )}
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg">{editingRoom ? "Edit Room" : "Add Room"}</h3>
-              <button onClick={() => setShowForm(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors"><X className="w-5 h-5" /></button>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+              Room Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={form.room_no}
+              onChange={(e) => setForm({ ...form, room_no: e.target.value })}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-bold"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={form.type}
+                onChange={(e) => setForm({ ...form, type: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-bold"
+              >
+                {roomTypes.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
             </div>
-            {formError && <div className="m-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg flex gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> {formError}</div>}
-            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-              <div><label className="block text-sm font-medium mb-1">Room Number *</label><input type="text" value={form.room_no} onChange={e => setForm({...form, room_no: e.target.value})} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" /></div>
-              <div><label className="block text-sm font-medium mb-1">Type *</label><select value={form.type} onChange={e => setForm({...form, type: e.target.value})} className="w-full p-2 border rounded-lg outline-none">{roomTypes.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
-              <div><label className="block text-sm font-medium mb-1">Guest Limit</label><input type="number" value={form.guest_limit} onChange={e => setForm({...form, guest_limit: e.target.value})} className="w-full p-2 border rounded-lg outline-none" /></div>
-              <div className="grid grid-cols-3 gap-2">
-                <div><label className="block text-xs font-medium mb-1">3 Day</label><input type="number" value={form.price_3day} onChange={e => setForm({...form, price_3day: e.target.value})} className="w-full p-2 border rounded-lg outline-none" /></div>
-                <div><label className="block text-xs font-medium mb-1">7 Day</label><input type="number" value={form.price_7day} onChange={e => setForm({...form, price_7day: e.target.value})} className="w-full p-2 border rounded-lg outline-none" /></div>
-                <div><label className="block text-xs font-medium mb-1">8+ Day</label><input type="number" value={form.price_8day} onChange={e => setForm({...form, price_8day: e.target.value})} className="w-full p-2 border rounded-lg outline-none" /></div>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Guest Limit <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                value={form.guest_limit}
+                onChange={(e) =>
+                  setForm({ ...form, guest_limit: e.target.value })
+                }
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-bold"
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-100">
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+              Pricing Structure{" "}
+              <span className="text-[10px] lowercase font-normal italic">
+                (₹ Per Night)
+              </span>
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                  3 Days
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    value={form.price_3day}
+                    onChange={(e) =>
+                      setForm({ ...form, price_3day: e.target.value })
+                    }
+                    className="w-full pl-6 pr-2 py-2.5 bg-gray-100/50 border border-transparent rounded-lg focus:bg-white focus:border-orange-500 outline-none text-xs font-black transition-all"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="p-6 border-t flex justify-end gap-3 bg-gray-50">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 font-medium text-gray-600">Cancel</button>
-              <button onClick={handleSubmit} className="px-4 py-2 bg-orange-500 text-white rounded-lg font-bold flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Save</button>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                  7 Days
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    value={form.price_7day}
+                    onChange={(e) =>
+                      setForm({ ...form, price_7day: e.target.value })
+                    }
+                    className="w-full pl-6 pr-2 py-2.5 bg-gray-100/50 border border-transparent rounded-lg focus:bg-white focus:border-orange-500 outline-none text-xs font-black transition-all"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                  8+ Days
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    value={form.price_8day}
+                    onChange={(e) =>
+                      setForm({ ...form, price_8day: e.target.value })
+                    }
+                    className="w-full pl-6 pr-2 py-2.5 bg-gray-100/50 border border-transparent rounded-lg focus:bg-white focus:border-orange-500 outline-none text-xs font-black transition-all"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
@@ -477,7 +814,14 @@ function MembersMaster({ setError, setLoading, setActiveTab }) {
   const [editingMember, setEditingMember] = useState(null);
   const [formError, setFormError] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
-  const [form, setForm] = useState({ name: "", membership_no: "", mobile_no: "", email: "", address: "", is_active: true });
+  const [form, setForm] = useState({
+    name: "",
+    membership_no: "",
+    mobile_no: "",
+    email: "",
+    address: "",
+    is_active: true,
+  });
   const [fieldErrors, setFieldErrors] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(8);
@@ -487,7 +831,9 @@ function MembersMaster({ setError, setLoading, setActiveTab }) {
     try {
       setDataLoading(true);
       const response = await memberService.getMembers();
-      const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+      const data = Array.isArray(response.data)
+        ? response.data
+        : response.data?.data || [];
       setMembers(data);
       setCurrentPage(0);
     } catch (err) {
@@ -497,23 +843,26 @@ function MembersMaster({ setError, setLoading, setActiveTab }) {
     }
   };
 
-  useEffect(() => { fetchMembers(); }, []);
+  useEffect(() => {
+    fetchMembers();
+  }, []);
 
   const filteredMembers = useMemo(() => {
-    if (!Array.isArray(members)) return [];
-    return members.filter(m => {
-      if (!m) return false;
-      const term = searchTerm.toLowerCase();
-      return (
-        (m.name || "").toLowerCase().includes(term) ||
-        (m.membership_no || "").toLowerCase().includes(term) ||
-        (m.mobile_no || "").includes(term)
-      );
+    const term = searchTerm.toLowerCase();
+    return safeArray(members).filter((m) => {
+      const name = safeString(m.name).toLowerCase();
+      const mNo = safeString(m.membership_no).toLowerCase();
+      const mobile = safeString(m.mobile_no);
+
+      return name.includes(term) || mNo.includes(term) || mobile.includes(term);
     });
   }, [members, searchTerm]);
 
   const paginatedMembers = useMemo(() => {
-    return filteredMembers.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+    return filteredMembers.slice(
+      currentPage * itemsPerPage,
+      (currentPage + 1) * itemsPerPage,
+    );
   }, [filteredMembers, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredMembers.length / itemsPerPage) || 1;
@@ -521,7 +870,8 @@ function MembersMaster({ setError, setLoading, setActiveTab }) {
   const validateForm = () => {
     const errors = {};
     if (!form.name?.trim()) errors.name = "Full Name is required.";
-    if (!form.membership_no?.trim()) errors.membership_no = "Member ID is required.";
+    if (!form.membership_no?.trim())
+      errors.membership_no = "Member ID is required.";
     if (!form.mobile_no?.trim()) {
       errors.mobile_no = "Mobile number is required.";
     } else if (!/^[0-9]{10}$/.test(form.mobile_no.trim())) {
@@ -546,7 +896,8 @@ function MembersMaster({ setError, setLoading, setActiveTab }) {
     try {
       setFormError("");
       setLoading(true);
-      if (editingMember) await memberService.updateMember(editingMember.id, form);
+      if (editingMember)
+        await memberService.updateMember(editingMember.id, form);
       else await memberService.createMember(form);
       await fetchMembers();
       setShowForm(false);
@@ -559,7 +910,14 @@ function MembersMaster({ setError, setLoading, setActiveTab }) {
   };
 
   const resetForm = () => {
-    setForm({ name: "", membership_no: "", mobile_no: "", email: "", address: "", is_active: true });
+    setForm({
+      name: "",
+      membership_no: "",
+      mobile_no: "",
+      email: "",
+      address: "",
+      is_active: true,
+    });
     setEditingMember(null);
     setFormError("");
     setFieldErrors({});
@@ -579,19 +937,35 @@ function MembersMaster({ setError, setLoading, setActiveTab }) {
             <table className="w-full text-left border-separate border-spacing-0">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-gray-50/95 backdrop-blur-sm border-b border-gray-100">
-                  <th className="py-4 px-6"><div className="h-2 w-24 bg-gray-200 rounded animate-pulse" /></th>
-                  <th className="py-4 px-6"><div className="h-2 w-32 bg-gray-200 rounded animate-pulse" /></th>
-                  <th className="py-4 px-6 text-center"><div className="h-2 w-24 bg-gray-200 rounded animate-pulse mx-auto" /></th>
-                  <th className="py-4 px-6 text-right"><div className="h-2 w-16 bg-gray-200 rounded animate-pulse ml-auto" /></th>
+                  <th className="py-4 px-6">
+                    <div className="h-2 w-24 bg-gray-200 rounded animate-pulse" />
+                  </th>
+                  <th className="py-4 px-6">
+                    <div className="h-2 w-32 bg-gray-200 rounded animate-pulse" />
+                  </th>
+                  <th className="py-4 px-6 text-center">
+                    <div className="h-2 w-24 bg-gray-200 rounded animate-pulse mx-auto" />
+                  </th>
+                  <th className="py-4 px-6 text-right">
+                    <div className="h-2 w-16 bg-gray-200 rounded animate-pulse ml-auto" />
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {[...Array(8)].map((_, i) => (
                   <tr key={i}>
-                    <td className="py-3 px-6"><div className="h-4 w-28 bg-gray-100 rounded animate-pulse" /></td>
-                    <td className="py-3 px-6"><div className="h-3 w-36 bg-gray-50 rounded animate-pulse" /></td>
-                    <td className="py-3 px-6 text-center"><div className="h-6 w-20 bg-gray-50 rounded-lg animate-pulse mx-auto" /></td>
-                    <td className="py-3 px-6 text-right"><div className="h-8 w-20 bg-gray-50 rounded-lg animate-pulse ml-auto" /></td>
+                    <td className="py-3 px-6">
+                      <div className="h-4 w-28 bg-gray-100 rounded animate-pulse" />
+                    </td>
+                    <td className="py-3 px-6">
+                      <div className="h-3 w-36 bg-gray-50 rounded animate-pulse" />
+                    </td>
+                    <td className="py-3 px-6 text-center">
+                      <div className="h-6 w-20 bg-gray-50 rounded-lg animate-pulse mx-auto" />
+                    </td>
+                    <td className="py-3 px-6 text-right">
+                      <div className="h-8 w-20 bg-gray-50 rounded-lg animate-pulse ml-auto" />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -604,96 +978,412 @@ function MembersMaster({ setError, setLoading, setActiveTab }) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-3 w-full">
-      <SharedMasterHeader activeTab="members" setActiveTab={setActiveTab} searchTerm={searchTerm} setSearchTerm={setSearchTerm} onAdd={() => { resetForm(); setShowForm(true); }} addLabel="Add Member" themeColor="emerald" />
+      <SharedMasterHeader
+        activeTab="members"
+        setActiveTab={setActiveTab}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        onAdd={() => {
+          resetForm();
+          setShowForm(true);
+        }}
+        addLabel="Add Member"
+        themeColor="emerald"
+      />
       <ContentCard className="flex-1">
         {/* ===== MOBILE CARD VIEW (< lg) ===== */}
         <div className="lg:hidden overflow-auto flex-1 custom-scrollbar scroll-smooth overscroll-contain">
           {paginatedMembers.length > 0 ? (
             <div className="p-4 space-y-2">
-              {paginatedMembers.map(m => (
-                <div key={m.id} className="p-3 bg-white border border-gray-100 rounded-xl hover:bg-emerald-50/40 transition-all duration-200 cursor-pointer shadow-sm group">
+              {paginatedMembers.map((m) => (
+                <div
+                  key={m.id}
+                  className="p-3 bg-white border border-gray-100 rounded-xl hover:bg-emerald-50/40 transition-all duration-200 cursor-pointer shadow-sm group"
+                >
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-gray-900 truncate leading-tight">{m.name}</p>
+                      <p className="text-sm font-bold text-gray-900 truncate leading-tight">
+                        {m.name}
+                      </p>
                       <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
                         <User className="w-3 h-3 text-gray-300 shrink-0" />
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest truncate">ID: {m.membership_no}</span>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest truncate">
+                          ID: {m.membership_no}
+                        </span>
                       </div>
                     </div>
-                    <span className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wide border leading-tight ${m.is_active ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-rose-100 text-rose-700 border-rose-200'}`}>{m.is_active ? 'Active' : 'Locked'}</span>
+                    <span
+                      className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wide border leading-tight ${m.is_active ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-rose-100 text-rose-700 border-rose-200"}`}
+                    >
+                      {m.is_active ? "Active" : "Locked"}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex flex-col gap-0.5 text-[10px] text-gray-400 min-w-0 flex-1 leading-tight">
-                      <div className="flex items-center gap-1.5 min-w-0"><Mail className="w-3 h-3 text-emerald-500 shrink-0" /><span className="font-medium truncate tracking-tight">{m.email}</span></div>
-                      <div className="flex items-center gap-1.5 min-w-0"><Phone className="w-3 h-3 text-gray-300 shrink-0" /><span className="font-bold tabular-nums tracking-tight">{m.mobile_no}</span></div>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Mail className="w-3 h-3 text-emerald-500 shrink-0" />
+                        <span className="font-medium truncate tracking-tight">
+                          {m.email}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Phone className="w-3 h-3 text-gray-300 shrink-0" />
+                        <span className="font-bold tabular-nums tracking-tight">
+                          {m.mobile_no}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <ActionIcon onClick={(e) => { e.stopPropagation(); setEditingMember(m); setForm({ name: m.name || "", membership_no: m.membership_no || "", mobile_no: m.mobile_no || "", email: m.email || "", address: m.address || "", is_active: m.is_active === null ? true : !!m.is_active }); setShowForm(true); }} title="Edit Member" ringColor="emerald-500" className="bg-emerald-50 text-emerald-600 border border-emerald-100"><Pencil className="w-3.5 h-3.5" /></ActionIcon>
-                      <ActionIcon onClick={(e) => { e.stopPropagation(); navigate(`/masters/members/${m.id}`); }} title="View Member" ringColor="blue-500" className="bg-blue-50 text-blue-600 border border-blue-100"><Eye className="w-3.5 h-3.5" /></ActionIcon>
+                      <ActionIcon
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingMember(m);
+                          setForm({
+                            name: m.name || "",
+                            membership_no: m.membership_no || "",
+                            mobile_no: m.mobile_no || "",
+                            email: m.email || "",
+                            address: m.address || "",
+                            is_active:
+                              m.is_active === null ? true : !!m.is_active,
+                          });
+                          setShowForm(true);
+                        }}
+                        title="Edit Member"
+                        ringColor="emerald-500"
+                        className="bg-emerald-50 text-emerald-600 border border-emerald-100"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </ActionIcon>
+                      <ActionIcon
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/masters/members/${m.id}`);
+                        }}
+                        title="View Member"
+                        ringColor="blue-500"
+                        className="bg-blue-50 text-blue-600 border border-blue-100"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </ActionIcon>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <EmptyState icon={Users} title="No members found" message="No records match your search criteria." actionText="Add Member" onAction={() => { resetForm(); setShowForm(true); }} themeColor="emerald" />
+            <EmptyState
+              icon={Users}
+              title="No members found"
+              message="No records match your search criteria."
+              actionText="Add Member"
+              onAction={() => {
+                resetForm();
+                setShowForm(true);
+              }}
+              themeColor="emerald"
+            />
           )}
         </div>
 
         {/* ===== DESKTOP TABLE VIEW (lg+) ===== */}
         <div className="hidden lg:block overflow-auto flex-1 custom-scrollbar scroll-smooth overscroll-contain">
-                <table className="w-full text-left border-separate border-spacing-0">
-                  <thead className="sticky top-0 z-10">
-                    <tr className="bg-gray-50/95 backdrop-blur-sm border-b border-gray-100">
-                      <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Member Details</th>
-                      <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Contact Information</th>
-                      <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none text-center">Status</th>
-                      <th className="py-4 px-6 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {paginatedMembers.length > 0 ? (
-                      paginatedMembers.map(m => (
-                        <tr key={m.id} className="hover:bg-emerald-50/40 transition-all duration-200 group cursor-pointer border-l-4 border-transparent hover:border-emerald-600">
-                          <td className="py-4 px-6"><div className="flex flex-col gap-1.5 min-w-0"><p className="text-sm font-bold text-gray-900 group-hover:text-emerald-700 transition-colors tracking-tight leading-relaxed truncate">{m.name}</p><div className="flex items-center gap-2 min-w-0"><span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest truncate">Member ID: {m.membership_no}</span></div></div></td>
-                          <td className="py-4 px-6 text-sm font-medium"><div className="flex flex-col gap-1.5 min-w-0"><div className="flex items-center gap-2 min-w-0"><Mail className="w-3.5 h-3.5 text-emerald-500 shrink-0" /><span className="font-bold tracking-tight truncate">{m.email}</span></div><div className="flex items-center gap-2 min-w-0"><Phone className="w-3.5 h-3.5 shrink-0" /><span className="font-bold tabular-nums truncate">{m.mobile_no}</span></div></div></td>
-                          <td className="py-4 px-6 text-center"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wide border ${m.is_active ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-rose-100 text-rose-700 border-rose-200'}`}>{m.is_active ? 'Active' : 'Locked'}</span></td>
-                          <td className="py-4 px-6"><div className="flex justify-end gap-2.5 shrink-0"><ActionIcon onClick={(e) => { e.stopPropagation(); setEditingMember(m); setForm({ name: m.name || "", membership_no: m.membership_no || "", mobile_no: m.mobile_no || "", email: m.email || "", address: m.address || "", is_active: m.is_active === null ? true : !!m.is_active }); setShowForm(true); }} title="Edit Member" ringColor="emerald-500" className="bg-emerald-50 text-emerald-600 border border-emerald-100"><Pencil className="w-4 h-4" /></ActionIcon><ActionIcon onClick={(e) => { e.stopPropagation(); navigate(`/masters/members/${m.id}`); }} title="View Member" ringColor="blue-500" className="bg-blue-50 text-blue-600 border border-blue-100"><Eye className="w-4 h-4" /></ActionIcon></div></td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="4">
-                          <EmptyState icon={Users} title="No members found" message="No records match your search criteria." actionText="Add Member" onAction={() => { resetForm(); setShowForm(true); }} themeColor="emerald" />
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+          <table className="w-full text-left border-separate border-spacing-0">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-gray-50/95 backdrop-blur-sm border-b border-gray-100">
+                <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                  Member Details
+                </th>
+                <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                  Contact Information
+                </th>
+                <th className="py-4 px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none text-center">
+                  Status
+                </th>
+                <th className="py-4 px-6 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {paginatedMembers.length > 0 ? (
+                paginatedMembers.map((m) => (
+                  <tr
+                    key={m.id}
+                    className="hover:bg-emerald-50/40 transition-all duration-200 group cursor-pointer border-l-4 border-transparent hover:border-emerald-600"
+                  >
+                    <td className="py-4 px-6">
+                      <div className="flex flex-col gap-1.5 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 group-hover:text-emerald-700 transition-colors tracking-tight leading-relaxed truncate">
+                          {m.name}
+                        </p>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest truncate">
+                            Member ID: {m.membership_no}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-sm font-medium">
+                      <div className="flex flex-col gap-1.5 min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Mail className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                          <span className="font-bold tracking-tight truncate">
+                            {m.email}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Phone className="w-3.5 h-3.5 shrink-0" />
+                          <span className="font-bold tabular-nums truncate">
+                            {m.mobile_no}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wide border ${m.is_active ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-rose-100 text-rose-700 border-rose-200"}`}
+                      >
+                        {m.is_active ? "Active" : "Locked"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex justify-end gap-2.5 shrink-0">
+                        <ActionIcon
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingMember(m);
+                            setForm({
+                              name: m.name || "",
+                              membership_no: m.membership_no || "",
+                              mobile_no: m.mobile_no || "",
+                              email: m.email || "",
+                              address: m.address || "",
+                              is_active:
+                                m.is_active === null ? true : !!m.is_active,
+                            });
+                            setShowForm(true);
+                          }}
+                          title="Edit Member"
+                          ringColor="emerald-500"
+                          className="bg-emerald-50 text-emerald-600 border border-emerald-100"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </ActionIcon>
+                        <ActionIcon
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/masters/members/${m.id}`);
+                          }}
+                          title="View Member"
+                          ringColor="blue-500"
+                          className="bg-blue-50 text-blue-600 border border-blue-100"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </ActionIcon>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4">
+                    <EmptyState
+                      icon={Users}
+                      title="No members found"
+                      message="No records match your search criteria."
+                      actionText="Add Member"
+                      onAction={() => {
+                        resetForm();
+                        setShowForm(true);
+                      }}
+                      themeColor="emerald"
+                    />
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-        <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filteredMembers.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} onItemsPerPageChange={setItemsPerPage} themeColor="emerald" />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredMembers.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+          themeColor="emerald"
+        />
       </ContentCard>
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg">{editingMember ? "Edit Member" : "Add Member"}</h3>
-              <button onClick={() => setShowForm(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors"><X className="w-5 h-5" /></button>
-            </div>
-            {formError && <div className="m-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg flex gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> {formError}</div>}
-            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-              <div><label className="block text-sm font-medium mb-1">Full Name *</label><input type="text" value={form.name} onChange={e => { setForm({...form, name: e.target.value}); setFieldErrors(p => ({...p, name: ""})); }} className={`w-full p-2 border rounded-lg outline-none ${fieldErrors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />{fieldErrors.name && <p className="text-xs text-red-600 mt-1">{fieldErrors.name}</p>}</div>
-              <div><label className="block text-sm font-medium mb-1">Member ID *</label><input type="text" value={form.membership_no} onChange={e => { setForm({...form, membership_no: e.target.value}); setFieldErrors(p => ({...p, membership_no: ""})); }} className={`w-full p-2 border rounded-lg outline-none ${fieldErrors.membership_no ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />{fieldErrors.membership_no && <p className="text-xs text-red-600 mt-1">{fieldErrors.membership_no}</p>}</div>
-              <div><label className="block text-sm font-medium mb-1">Mobile No *</label><input type="tel" maxLength={10} value={form.mobile_no} onChange={e => { setForm({...form, mobile_no: e.target.value}); setFieldErrors(p => ({...p, mobile_no: ""})); }} className={`w-full p-2 border rounded-lg outline-none ${fieldErrors.mobile_no ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />{fieldErrors.mobile_no && <p className="text-xs text-red-600 mt-1">{fieldErrors.mobile_no}</p>}</div>
-              <div><label className="block text-sm font-medium mb-1">Email *</label><input type="email" value={form.email || ""} onChange={e => { setForm({...form, email: e.target.value}); setFieldErrors(p => ({...p, email: ""})); }} className={`w-full p-2 border rounded-lg outline-none ${fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />{fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}</div>
-              <div><label className="block text-sm font-medium mb-1">Address *</label><textarea value={form.address || ""} onChange={e => { setForm({...form, address: e.target.value}); setFieldErrors(p => ({...p, address: ""})); }} className={`w-full p-2 border rounded-lg outline-none ${fieldErrors.address ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} rows="3" />{fieldErrors.address && <p className="text-xs text-red-600 mt-1">{fieldErrors.address}</p>}</div>
-              <div className="flex items-center gap-2 pt-2"><input type="checkbox" id="member_active" checked={!!form.is_active} onChange={e => setForm({...form, is_active: e.target.checked})} className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" /><label htmlFor="member_active" className="text-sm font-medium text-gray-700 cursor-pointer">Active Member</label></div>
-            </div>
-            <div className="p-6 border-t flex justify-end gap-3 bg-gray-50"><button onClick={() => setShowForm(false)} className="px-4 py-2 font-medium text-gray-600">Cancel</button><button onClick={handleSubmit} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Save</button></div>
+      {/* Members Form Modal */}
+      <Modal
+        isOpen={showForm}
+        onClose={() => {
+          setShowForm(false);
+          resetForm();
+        }}
+        title={editingMember ? "Edit Member" : "Add Member"}
+        subtitle={
+          editingMember ? "Update member profile" : "Create new member record"
+        }
+        icon={Users}
+        maxWidth="max-w-md"
+        footer={
+          <div className="flex justify-end gap-3 w-full font-medium">
+            <button
+              onClick={() => {
+                setShowForm(false);
+                resetForm();
+              }}
+              className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95 text-sm"
+            >
+              <CheckCircle className="w-4 h-4" /> Save Member
+            </button>
           </div>
+        }
+      >
+        {formError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-red-700 font-bold">{formError}</p>
+            </div>
+            <button
+              onClick={() => setFormError("")}
+              className="p-1 hover:bg-red-100 rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4 text-red-400" />
+            </button>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Full Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => {
+                  setForm({ ...form, name: e.target.value });
+                  setFieldErrors((p) => ({ ...p, name: "" }));
+                }}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold ${fieldErrors.name ? "border-red-500 bg-red-50" : "border-gray-100"}`}
+              />
+              {fieldErrors.name && (
+                <p className="text-[10px] text-red-600 mt-1 font-bold uppercase tracking-tight">
+                  {fieldErrors.name}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Member ID <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.membership_no}
+                onChange={(e) => {
+                  setForm({ ...form, membership_no: e.target.value });
+                  setFieldErrors((p) => ({ ...p, membership_no: "" }));
+                }}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold uppercase tracking-wider ${fieldErrors.membership_no ? "border-red-500 bg-red-50" : "border-gray-100"}`}
+              />
+              {fieldErrors.membership_no && (
+                <p className="text-[10px] text-red-600 mt-1 font-bold uppercase tracking-tight">
+                  {fieldErrors.membership_no}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Mobile Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                maxLength={10}
+                value={form.mobile_no}
+                onChange={(e) => {
+                  setForm({ ...form, mobile_no: e.target.value });
+                  setFieldErrors((p) => ({ ...p, mobile_no: "" }));
+                }}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold tabular-nums ${fieldErrors.mobile_no ? "border-red-500 bg-red-50" : "border-gray-100"}`}
+              />
+              {fieldErrors.mobile_no && (
+                <p className="text-[10px] text-red-600 mt-1 font-bold uppercase tracking-tight">
+                  {fieldErrors.mobile_no}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+              Email Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              value={form.email || ""}
+              onChange={(e) => {
+                setForm({ ...form, email: e.target.value });
+                setFieldErrors((p) => ({ ...p, email: "" }));
+              }}
+              className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold ${fieldErrors.email ? "border-red-500 bg-red-50" : "border-gray-100"}`}
+            />
+            {fieldErrors.email && (
+              <p className="text-[10px] text-red-600 mt-1 font-bold uppercase tracking-tight">
+                {fieldErrors.email}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+              Permanent Address <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={form.address || ""}
+              onChange={(e) => {
+                setForm({ ...form, address: e.target.value });
+                setFieldErrors((p) => ({ ...p, address: "" }));
+              }}
+              className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-medium resize-none ${fieldErrors.address ? "border-red-500 bg-red-50" : "border-gray-100"}`}
+              rows="3"
+            />
+            {fieldErrors.address && (
+              <p className="text-[10px] text-red-600 mt-1 font-bold uppercase tracking-tight">
+                {fieldErrors.address}
+              </p>
+            )}
+          </div>
+
+          <label className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-xl cursor-pointer group">
+            <input
+              type="checkbox"
+              id="member_active"
+              checked={!!form.is_active}
+              onChange={(e) =>
+                setForm({ ...form, is_active: e.target.checked })
+              }
+              className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 accent-emerald-600"
+            />
+            <span className="text-sm text-gray-700 font-bold">
+              Member is Active
+            </span>
+          </label>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

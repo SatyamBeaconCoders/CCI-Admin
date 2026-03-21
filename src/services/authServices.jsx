@@ -1,30 +1,3 @@
-// // src/services/authServices.jsx
-// import api from "../services/api";
-// import { setAuth, clearAuth } from "../utils/authStorage";
-
-// // 🔐 Login
-// export const loginService = async (payload) => {
-//   const res = await api.post("/login", payload);
-
-  
-//   console.log("🔐 FULL LOGIN RESPONSE 👉", res.data);
-//   // assuming response: { token, user }
-//   setAuth(res.data.token, res.data.user);
-
-//   return res.data;
-// };
-
-// // 👤 Profile
-// export const getProfileService = async () => {
-//   const res = await api.get("/user");
-//   return res.data;
-// };
-
-// // 🚪 Logout
-// export const logoutService = async () => {
-//   await api.post("/logout");
-//   clearAuth();
-// };
 import api from "../services/api";
 import { setAuth, clearAuth } from "../utils/authStorage";
 

@@ -1,6 +1,6 @@
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginService } from "../services/authServices";
 import {
@@ -26,6 +26,10 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "Login | CCI Admin";
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();

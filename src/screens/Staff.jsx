@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Trash2, Pencil, X, User, Search, CheckCircle, AlertCircle, Shield, Key, Mail, Phone, ChevronLeft, ChevronRight, ChevronDown, Eye } from "lucide-react";
 import * as userService from "../services/userServices";
-import { PageLayout, ActionIcon, EmptyState, MobileCardSkeleton, HeaderSkeleton, ContentCard, Pagination } from "../components/UIComponents";
+import { PageLayout, ActionIcon, EmptyState, MobileCardSkeleton, HeaderSkeleton, ContentCard, Pagination, Modal } from "../components/UIComponents";
+import { safeString, safeArray, safeNumber, FALLBACK, logMissing } from "../utils/dataUtils";
 
 
 
@@ -202,11 +203,18 @@ export default function Staff() {
   };
 
   const filteredStaff = useMemo(() => {
-    return staff.filter(staffMember =>
-      staffMember.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staffMember.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staffMember.role?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const term = safeString(searchTerm).toLowerCase();
+    return safeArray(staff).filter(staffMember => {
+      const name = safeString(staffMember.name).toLowerCase();
+      const role = safeString(staffMember.role).toLowerCase();
+      const user = safeString(staffMember.username).toLowerCase();
+
+      return (
+        name.includes(term) ||
+        role.includes(term) ||
+        user.includes(term)
+      );
+    });
   }, [staff, searchTerm]);
 
   const paginatedStaff = useMemo(() => {
@@ -440,83 +448,81 @@ export default function Staff() {
       </ContentCard>
 
       {/* Staff Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <User className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900">{editingStaff ? "Edit Staff" : "Add New Staff"}</h3>
-                    <p className="text-sm text-gray-600">{editingStaff ? "Update staff details" : "Create new staff account"}</p>
-                  </div>
-                </div>
-                <button onClick={() => { setShowForm(false); resetForm(); }} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
+      <Modal
+        isOpen={showForm}
+        onClose={() => { setShowForm(false); resetForm(); }}
+        title={editingStaff ? "Edit Staff" : "Add New Staff"}
+        subtitle={editingStaff ? "Update staff details" : "Create new staff account"}
+        icon={User}
+        maxWidth="max-w-md"
+        footer={
+          <div className="flex justify-end gap-3 w-full">
+            <button onClick={() => { setShowForm(false); resetForm(); }} className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+            <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-100 transition-all active:scale-95">
+              <CheckCircle className="w-4 h-4" />
+              {editingStaff ? "Update" : "Create"}
+            </button>
+          </div>
+        }
+      >
+        {formError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-red-700 font-bold">{formError}</p>
             </div>
+            <button onClick={() => setFormError("")} className="p-1 hover:bg-red-100 rounded-lg transition-colors">
+              <X className="w-4 h-4 text-red-400" />
+            </button>
+          </div>
+        )}
 
-            {formError && (
-              <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700 flex-1">{formError}</p>
-                <button onClick={() => setFormError("")}><X className="w-4 h-4 text-red-400 hover:text-red-600" /></button>
-              </div>
-            )}
+        <div className="space-y-5">
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Full Name <span className="text-red-500">*</span></label>
+            <input type="text" placeholder="Enter staff name" autoComplete="off" value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); setFieldErrors(p => ({...p, name: ""})); }} className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium ${fieldErrors.name ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} />
+            {fieldErrors.name && <p className="text-[10px] text-red-600 mt-1 font-bold uppercase tracking-tight">{fieldErrors.name}</p>}
+          </div>
 
-            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
-                <input type="text" placeholder="Enter staff name" autoComplete="off" value={form.name} onChange={(e) => { setForm({ ...form, name: e.target.value }); setFieldErrors(p => ({...p, name: ""})); }} className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />
-                {fieldErrors.name && <p className="text-xs text-red-600 mt-1">{fieldErrors.name}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username <span className="text-red-500">*</span></label>
-                <input type="text" placeholder="Login username" autoComplete="off" value={form.username} onChange={(e) => { setForm({ ...form, username: e.target.value }); setFieldErrors(p => ({...p, username: ""})); }} className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.username ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />
-                {fieldErrors.username && <p className="text-xs text-red-600 mt-1">{fieldErrors.username}</p>}
-              </div>
-              {!editingStaff && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password <span className="text-red-500">*</span></label>
-                  <input type="password" placeholder="Min 6 chars" autoComplete="new-password" value={form.password} onChange={(e) => { setForm({ ...form, password: e.target.value }); setFieldErrors(p => ({...p, password: ""})); }} className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />
-                  {fieldErrors.password && <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role <span className="text-red-500">*</span></label>
-                <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                  {roles.map((role) => <option key={role} value={role}>{role}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone <span className="text-red-500">*</span></label>
-                <input type="tel" placeholder="10-digit mobile" maxLength={10} value={form.phone} onChange={(e) => { setForm({ ...form, phone: e.target.value }); setFieldErrors(p => ({...p, phone: ""})); }} className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />
-                {fieldErrors.phone && <p className="text-xs text-red-600 mt-1">{fieldErrors.phone}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email <span className="text-gray-400 text-xs">(Optional)</span></label>
-                <input type="email" placeholder="staff@example.com" value={form.email} onChange={(e) => { setForm({ ...form, email: e.target.value }); setFieldErrors(p => ({...p, email: ""})); }} className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} />
-              </div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="rounded text-blue-500 focus:ring-blue-500 w-4 h-4" />
-                <span className="text-sm text-gray-700">Active Account</span>
-              </label>
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Username <span className="text-red-500">*</span></label>
+            <input type="text" placeholder="Login username" autoComplete="off" value={form.username} onChange={(e) => { setForm({ ...form, username: e.target.value }); setFieldErrors(p => ({...p, username: ""})); }} className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium ${fieldErrors.username ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} />
+            {fieldErrors.username && <p className="text-[10px] text-red-600 mt-1 font-bold uppercase tracking-tight">{fieldErrors.username}</p>}
+          </div>
+
+          {!editingStaff && (
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Password <span className="text-red-500">*</span></label>
+              <input type="password" placeholder="Min 6 characters" autoComplete="new-password" value={form.password} onChange={(e) => { setForm({ ...form, password: e.target.value }); setFieldErrors(p => ({...p, password: ""})); }} className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium ${fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} />
+              {fieldErrors.password && <p className="text-[10px] text-red-600 mt-1 font-bold uppercase tracking-tight">{fieldErrors.password}</p>}
             </div>
+          )}
 
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-              <button onClick={() => { setShowForm(false); resetForm(); }} className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg">Cancel</button>
-              <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                {editingStaff ? "Update" : "Create"}
-              </button>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Role <span className="text-red-500">*</span></label>
+              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold">
+                {roles.map((role) => <option key={role} value={role}>{role}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Phone <span className="text-red-500">*</span></label>
+              <input type="tel" placeholder="10-digit mobile" maxLength={10} value={form.phone} onChange={(e) => { setForm({ ...form, phone: e.target.value }); setFieldErrors(p => ({...p, phone: ""})); }} className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold tabular-nums ${fieldErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} />
+              {fieldErrors.phone && <p className="text-[10px] text-red-600 mt-1 font-bold uppercase tracking-tight">{fieldErrors.phone}</p>}
             </div>
           </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Email <span className="text-gray-400 text-[10px] font-normal lowercase">(Optional)</span></label>
+            <input type="email" placeholder="staff@example.com" value={form.email} onChange={(e) => { setForm({ ...form, email: e.target.value }); setFieldErrors(p => ({...p, email: ""})); }} className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium ${fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} />
+          </div>
+
+          <label className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-xl cursor-pointer group">
+            <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 accent-blue-600" />
+            <span className="text-sm text-gray-700 font-bold">Account is Active</span>
+          </label>
         </div>
-      )}
+      </Modal>
 
       {loading && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[60]">

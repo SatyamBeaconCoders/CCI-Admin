@@ -18,37 +18,121 @@ const BookingDetail = lazy(() => import("./screens/BookingDetail"));
 // ⚠️ Keep layout normal (important)
 import AdminLayout from "./layout/AdminLayout";
 
+import ErrorBoundary from "./components/ErrorBoundary";
+
 export default function App() {
   const isLoggedIn = true;
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
             <Suspense fallback={<div>Loading...</div>}>
               <Login />
             </Suspense>
-          } 
+          }
         />
 
         <Route
           path="/"
-          element={isLoggedIn ? <AdminLayout /> : <Navigate to="/login" />}
+          element={
+            <ErrorBoundary>
+              {isLoggedIn ? <AdminLayout /> : <Navigate to="/login" />}
+            </ErrorBoundary>
+          }
         >
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="bookings" element={<Suspense fallback={<div className="p-8 flex justify-center"><div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}><Bookings /></Suspense>} />
-          <Route path="bookings/:id" element={<Suspense fallback={<div className="p-8 flex justify-center"><div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}><BookingDetail /></Suspense>} />
-          <Route path="masters" element={<Suspense fallback={<div className="p-8 flex justify-center"><div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}><Masters /></Suspense>} />
-          <Route path="reports" element={<Suspense fallback={<div className="p-8 flex justify-center"><div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}><Reports /></Suspense>} />
-          <Route path="staff" element={<Suspense fallback={<div className="p-8 flex justify-center"><div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}><Staff /></Suspense>} />
-          <Route path="settings" element={<Suspense fallback={<div className="p-8 flex justify-center"><div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}><Settings /></Suspense>} />
-          <Route index element={<Navigate to="/dashboard" />} />
-        </Route>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route
+              path="bookings"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="p-8 flex justify-center">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  }
+                >
+                  <Bookings />
+                </Suspense>
+              }
+            />
+            <Route
+              path="bookings/:id"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="p-8 flex justify-center">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  }
+                >
+                  <BookingDetail />
+                </Suspense>
+              }
+            />
+            <Route
+              path="masters"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="p-8 flex justify-center">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  }
+                >
+                  <Masters />
+                </Suspense>
+              }
+            />
+            <Route
+              path="reports"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="p-8 flex justify-center">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  }
+                >
+                  <Reports />
+                </Suspense>
+              }
+            />
+            <Route
+              path="staff"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="p-8 flex justify-center">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  }
+                >
+                  <Staff />
+                </Suspense>
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="p-8 flex justify-center">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  }
+                >
+                  <Settings />
+                </Suspense>
+              }
+            />
+            <Route index element={<Navigate to="/dashboard" />} />
+          </Route>
 
-        <Route path="*" element={<Navigate to="/dashboard" />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </Routes>
     </BrowserRouter>
   );
 }

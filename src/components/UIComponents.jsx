@@ -1,5 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import {
+  Search,
+  Plus,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-react";
+import { FALLBACK } from "../utils/dataUtils";
 
 /**
  * PRODUCTION-GRADE UI SYSTEM
@@ -25,15 +34,22 @@ export const PageLayout = ({ children, className = "" }) => (
 /* ================= ACTION ICON ================= */
 // Static ring map — Tailwind does NOT support dynamic class strings like `focus:ring-${color}/20`
 const ringMap = {
-  "blue-500":    "focus:ring-blue-500/20",
-  "orange-500":  "focus:ring-orange-500/20",
+  "blue-500": "focus:ring-blue-500/20",
+  "orange-500": "focus:ring-orange-500/20",
   "emerald-500": "focus:ring-emerald-500/20",
-  "red-500":     "focus:ring-red-500/20",
-  "rose-500":    "focus:ring-rose-500/20",
-  "indigo-500":  "focus:ring-indigo-500/20",
+  "red-500": "focus:ring-red-500/20",
+  "rose-500": "focus:ring-rose-500/20",
+  "indigo-500": "focus:ring-indigo-500/20",
 };
 
-export const ActionIcon = ({ children, onClick, title, className = "", disabled = false, ringColor = "blue-500" }) => (
+export const ActionIcon = ({
+  children,
+  onClick,
+  title,
+  className = "",
+  disabled = false,
+  ringColor = "blue-500",
+}) => (
   <button
     onClick={onClick}
     title={title}
@@ -45,14 +61,24 @@ export const ActionIcon = ({ children, onClick, title, className = "", disabled 
 );
 
 /* ================= EMPTY STATE ================= */
-export const EmptyState = ({ icon: Icon, title, message, actionText, onAction }) => (
-  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 sm:p-8 space-y-3 min-h-[180px] sm:min-h-[240px] bg-white/50 border-t border-gray-50 uppercase tracking-tight">
+export const EmptyState = ({
+  icon: Icon,
+  title,
+  message,
+  actionText,
+  onAction,
+}) => (
+  <div className="flex flex-col items-center justify-start pt-16 text-center px-6 sm:px-8 pb-6 sm:pb-8 space-y-3 min-h-[180px] sm:min-h-[240px] bg-white/50 border-t border-gray-50 uppercase tracking-tight">
     <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-300">
       {Icon && <Icon className="w-6 h-6" />}
     </div>
     <div className="space-y-1">
-      <h3 className="text-sm font-bold text-gray-900 tracking-tight">{title}</h3>
-      <p className="text-xs text-gray-500 font-medium max-w-[240px] leading-relaxed mx-auto">{message}</p>
+      <h3 className="text-sm font-bold text-gray-900 tracking-tight">
+        {title}
+      </h3>
+      <p className="text-xs text-gray-500 font-medium max-w-[240px] leading-relaxed mx-auto">
+        {message}
+      </p>
     </div>
     {actionText && onAction && (
       <button
@@ -68,13 +94,23 @@ export const EmptyState = ({ icon: Icon, title, message, actionText, onAction })
 
 /* ================= CONTENT CARD ================= */
 export const ContentCard = ({ children, className = "" }) => (
-  <div className={`bg-white border border-gray-200 rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex flex-col min-h-0 overflow-hidden ${className}`}>
+  <div
+    className={`bg-white border border-gray-200 rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex flex-col min-h-0 overflow-hidden ${className}`}
+  >
     {children}
   </div>
 );
 
 /* ================= PAGINATION ================= */
-export const Pagination = ({ currentPage, totalPages, totalItems, itemsPerPage, onPageChange, onItemsPerPageChange, themeColor = "blue" }) => {
+export const Pagination = ({
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+  onItemsPerPageChange,
+  themeColor = "blue",
+}) => {
   const isEmpty = !totalItems || totalItems === 0;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -82,7 +118,8 @@ export const Pagination = ({ currentPage, totalPages, totalItems, itemsPerPage, 
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setIsOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target))
+        setIsOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -93,47 +130,62 @@ export const Pagination = ({ currentPage, totalPages, totalItems, itemsPerPage, 
   const end = Math.min((currentPage + 1) * itemsPerPage, totalItems);
 
   // Dynamic theme classes
-  const btnActiveTheme = themeColor === 'orange' ? 'bg-orange-600 text-white shadow-md' :
-                        themeColor === 'emerald' ? 'bg-emerald-600 text-white shadow-md' :
-                        'bg-blue-600 text-white shadow-md';
-  const dropdownTheme = themeColor === 'orange' ? 'bg-orange-50 text-orange-600' :
-                        themeColor === 'emerald' ? 'bg-emerald-50 text-emerald-600' :
-                        'bg-blue-50 text-blue-600';
-  const dropdownHoverTheme = themeColor === 'orange' ? 'hover:bg-orange-50/50 hover:text-orange-600' :
-                             themeColor === 'emerald' ? 'hover:bg-emerald-50/50 hover:text-emerald-600' :
-                             'hover:bg-blue-50/50 hover:text-blue-600';
+  const btnActiveTheme =
+    themeColor === "orange"
+      ? "bg-orange-600 text-white shadow-md"
+      : themeColor === "emerald"
+        ? "bg-emerald-600 text-white shadow-md"
+        : "bg-blue-600 text-white shadow-md";
+  const dropdownTheme =
+    themeColor === "orange"
+      ? "bg-orange-50 text-orange-600"
+      : themeColor === "emerald"
+        ? "bg-emerald-50 text-emerald-600"
+        : "bg-blue-50 text-blue-600";
+  const dropdownHoverTheme =
+    themeColor === "orange"
+      ? "hover:bg-orange-50/50 hover:text-orange-600"
+      : themeColor === "emerald"
+        ? "hover:bg-emerald-50/50 hover:text-emerald-600"
+        : "hover:bg-blue-50/50 hover:text-blue-600";
 
   return (
     <div className="sticky bottom-0 left-0 right-0 z-20 shrink-0 flex flex-row items-center justify-between gap-1 bg-white/95 backdrop-blur-md px-3 py-2 border-t border-gray-100 shadow-[0_-8px_15px_-5px_rgba(0,0,0,0.05)]">
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <p className="text-xs text-gray-400 font-bold uppercase tracking-tight whitespace-nowrap leading-tight">
-          <span className="hidden min-[400px]:inline text-gray-400">Showing </span>
-          <span className="text-gray-900">{start}–{end}</span>
+          <span className="hidden min-[400px]:inline text-gray-400">
+            Showing{" "}
+          </span>
+          <span className="text-gray-900">
+            {start}–{end}
+          </span>
           <span className="text-gray-400 px-1">of</span>
           <span className="text-gray-900">{totalItems}</span>
         </p>
-        
+
         <div className="flex items-center gap-1 border-l border-gray-100 pl-2">
           <div className="relative flex items-center h-5" ref={dropdownRef}>
-            <button 
+            <button
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center gap-1 bg-transparent border-none text-xs font-bold text-gray-900 h-full py-0 pr-4 cursor-pointer focus:outline-none"
             >
               <span>{itemsPerPage}</span>
-              <ChevronDown className={`w-3 h-3 text-gray-400 absolute right-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`w-3 h-3 text-gray-400 absolute right-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              />
             </button>
-            
+
             {isOpen && (
               <div className="absolute bottom-full mb-2 left-0 min-w-[60px] bg-white border border-gray-100 rounded-xl shadow-[0_-10px_30px_-5px_rgba(0,0,0,0.1)] z-20 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
-                {options.map(opt => (
-                  <button 
+                {options.map((opt) => (
+                  <button
                     key={opt}
                     onClick={() => {
                       onItemsPerPageChange(opt);
                       onPageChange(0);
                       setIsOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${itemsPerPage === opt ? dropdownTheme : 'text-gray-700 ' + dropdownHoverTheme}`}
+                    className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${itemsPerPage === opt ? dropdownTheme : "text-gray-700 " + dropdownHoverTheme}`}
                   >
                     {opt}
                   </button>
@@ -159,16 +211,20 @@ export const Pagination = ({ currentPage, totalPages, totalItems, itemsPerPage, 
             <button
               key={i}
               onClick={() => onPageChange(i)}
-              className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${currentPage === i ? btnActiveTheme : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${currentPage === i ? btnActiveTheme : "text-gray-500 hover:bg-gray-100"}`}
             >
-              {i+1}
+              {i + 1}
             </button>
           ))}
         </div>
 
         <button
-          onClick={() => onPageChange(Math.min(totalPages - 1, currentPage + 1))}
-          disabled={currentPage === totalPages - 1 || totalPages === 0 || isEmpty}
+          onClick={() =>
+            onPageChange(Math.min(totalPages - 1, currentPage + 1))
+          }
+          disabled={
+            currentPage === totalPages - 1 || totalPages === 0 || isEmpty
+          }
           className="h-8 pl-3 pr-2 flex items-center gap-1 text-xs font-bold rounded-lg border border-gray-100 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors bg-white shadow-sm"
         >
           <span>Next</span>
@@ -206,10 +262,106 @@ export const HeaderSkeleton = ({ hasSubtitle = true }) => (
       <div className="w-9 h-9 rounded-lg bg-gray-50 animate-pulse shrink-0" />
       <div className="space-y-1.5 hidden sm:block">
         <div className="h-4 w-28 bg-gray-100 rounded animate-pulse" />
-        {hasSubtitle && <div className="h-2.5 w-40 bg-gray-50 rounded animate-pulse" />}
+        {hasSubtitle && (
+          <div className="h-2.5 w-40 bg-gray-50 rounded animate-pulse" />
+        )}
       </div>
       <div className="h-10 flex-1 max-w-[180px] bg-gray-50 rounded-lg animate-pulse ml-1" />
     </div>
     <div className="h-10 w-24 bg-blue-50/50 rounded-lg animate-pulse shrink-0" />
   </div>
 );
+
+/* ================= GLOBAL MODAL (PORTAL) ================= */
+export const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  subtitle,
+  icon: Icon,
+  children,
+  maxWidth = "max-w-md",
+  footer,
+  headerExtra,
+}) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // Scroll Locking
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+        onClick={onClose}
+      />
+
+      {/* Modal Container */}
+      <div
+        className={`relative bg-white rounded-2xl shadow-2xl w-full ${maxWidth} overflow-hidden transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]`}
+      >
+        {/* Header content depends on whether we have icon/title */}
+        {(title || Icon) && (
+          <div className="p-4 sm:p-6 border-b border-gray-100 flex-shrink-0 bg-gray-50/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                {Icon && (
+                  <div className="p-2 bg-orange-50 rounded-lg shrink-0">
+                    <Icon className="w-5 h-5 text-orange-500" />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-lg font-bold text-gray-900 truncate">
+                      {title || FALLBACK}
+                    </h3>
+                    {headerExtra}
+                  </div>
+                  {subtitle && (
+                    <p className="text-sm text-gray-500 truncate">{subtitle}</p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-white rounded-xl transition-colors text-gray-400 hover:text-gray-900 hover:shadow-sm shrink-0 ml-2"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="p-4 sm:p-6 overflow-y-auto overflow-x-hidden custom-scrollbar flex-1 min-h-0">
+          {children}
+        </div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="p-4 sm:p-6 border-t border-gray-100 bg-gray-50/50 flex-shrink-0">
+            {footer}
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body,
+  );
+};
